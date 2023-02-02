@@ -64,6 +64,25 @@ namespace martlib
         }
 
         /// <summary>
+        /// Resets the pointer to 0.
+        /// </summary>
+        public void Flush()
+        {
+            pos = 0;
+        }
+
+        /// <summary>
+        /// Wipes all unused (out of range) positions.
+        /// </summary>
+        public void PurgeUnused()
+        {
+            for (uint i = pos; i < max; ++i)
+            {
+                data[i] = default;
+            }
+        }
+
+        /// <summary>
         /// Does nothing lol. Fix it later.
         /// </summary>
         /// <param name="i"></param>
