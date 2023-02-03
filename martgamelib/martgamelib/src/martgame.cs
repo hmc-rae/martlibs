@@ -27,6 +27,22 @@ namespace martgamelib.src
 
         public martgame(WindowDetails w, LogisticDetails l)
         {
+            SpriteHandler.Initialize($"{Directory.GetCurrentDirectory()}\\Assets\\YellowPages\\TextureDirectory.path", $"{Directory.GetCurrentDirectory()}\\Assets\\YellowPages\\EntityAnimations.path");
+
+            //Initialize component reader to default directory
+            //It'll be Assets\\Scripts, read all files in there for valid
+
+            input = new InputManager();
+            window = new GameWindow(w.Width, w.Height, w.Title, input, w.Fullscreen ? GameWindow.FULLSCREEN_STYLE : GameWindow.DEFAULT_STYLE);
+            timer = new Runtimer(1000 / l.FrameRate);
+            scene = new GameScene(l.ObjectPoolSize, l.WorkerThreadCount, this);
+        }
+        public martgame(WindowDetails w, LogisticDetails l, string directoryPath, string entityPath, string libsPath)
+        {
+            SpriteHandler.Initialize(directoryPath, entityPath);
+
+            //Initialize component reader to set directory
+
             input = new InputManager();
             window = new GameWindow(w.Width, w.Height, w.Title, input, w.Fullscreen ? GameWindow.FULLSCREEN_STYLE : GameWindow.DEFAULT_STYLE);
             timer = new Runtimer(1000 / l.FrameRate);

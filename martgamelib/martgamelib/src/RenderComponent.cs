@@ -15,6 +15,7 @@ namespace martgamelib.src
 
     public class SpriteRenderer : RenderComponent
     {
-
+        public EntityEntry EntityAnimations;
+        public int AnimState, AnimFrame;
     }
 }
