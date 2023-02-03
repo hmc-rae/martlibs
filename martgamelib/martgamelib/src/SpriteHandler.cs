@@ -20,7 +20,7 @@ namespace martgamelib.src
             entEntry = JsonSerializer.Deserialize<EntityEntry[]>(entityEntryPath);
             textureDirectory = JsonSerializer.Deserialize<TextureDirectory>(directoryPath);
         }
-        public static EntityEntry GetEntityAnimations(uint EntityID)
+        public static EntityEntry GetEntityAnimations(int EntityID)
         {
             for (int i = 0; i < entEntry.Length; i++)
             {
@@ -36,8 +36,8 @@ namespace martgamelib.src
     }
     public class EntityEntry
     {
-        public uint ID;
-        public uint AnimationCount;
+        public int ID;
+        public int AnimationCount;
 
         [JsonInclude]
         internal AnimationEntry[] Animations;
@@ -47,8 +47,8 @@ namespace martgamelib.src
 
         internal class AnimationEntry
         {
-            public uint ID;
-            public uint FrameCount;
+            public int ID;
+            public int FrameCount;
             [JsonInclude]
             internal SpriteFrame[] Frames;
 
@@ -98,6 +98,14 @@ namespace martgamelib.src
             if (ValidAnimationFrame(anim, frame))
                 return Animations[anim].Frames[frame].sprite;
             return null;
+        }
+        public int GetFrameCount(int anim)
+        {
+            if (anim < AnimationCount && anim > 0)
+            {
+                return Animations[anim].FrameCount;
+            }
+            return 0;
         }
 
         internal void Build(TextureDirectory dir)

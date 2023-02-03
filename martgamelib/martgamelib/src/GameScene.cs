@@ -92,6 +92,7 @@ namespace communistOverhaul
         protected override void ProcessObject(GameObject? obj)
         {
             //Call all internal methods on the object
+            
         }
     }
 }

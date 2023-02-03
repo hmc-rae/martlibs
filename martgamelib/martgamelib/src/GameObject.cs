@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Reflection;
 using martgamelib.src;
 using martlib;
+using martlib.src;
 
 //TODO: Finish the function to add behavior to a game object & enqueue it
 
@@ -32,6 +33,11 @@ namespace martgamelib
         internal Transform transformComponent;
         internal RenderComponent renderComponent;
 
+        public FlagStruct Flags;
+        public Transform Transform => transformComponent;
+        public RenderComponent RenderComponent => renderComponent;
+
+
         /// <summary>
         /// Generates a fresh GameObject at a given position.
         /// </summary>
@@ -46,7 +52,7 @@ namespace martgamelib
             table = new Dictionary<Type, BehaviorComponent>(32);
             components = new List<BehaviorComponent>(32);
 
-            transformComponent = AddBehavior(typeof(Transform), PositionData) as Transform;
+            Flags = new FlagStruct();
         }
         /// <summary>
         /// Generates a fresh GameObject at a default position.
@@ -62,6 +68,7 @@ namespace martgamelib
             components = new List<BehaviorComponent>(32);
 
             transformComponent = AddBehavior(typeof(Transform)) as Transform;
+            Flags = new FlagStruct();
         }
 
         /// <summary>
@@ -105,12 +112,15 @@ namespace martgamelib
         //Return true if successfully added
         internal bool addToObject(BehaviorComponent component, Type componentType)
         {
+            if (table.ContainsKey(componentType)) return false; //cant add if already exist
+
+            if (component as RenderComponent != null)
+                renderComponent = component as RenderComponent;
+
             component.parent = this;
             component.scene = scene;
             component.time = time;
             component.inputManager = scene.Input;
-            
-            if (table.ContainsKey(componentType)) return false; //cant add if already exist
 
             table.Add(componentType, component);
             components.Insert(componentCount, component);
@@ -126,6 +136,14 @@ namespace martgamelib
             {
                 components[i].OnCreate();
             }
+        }
+        internal void behavior()
+        {
+            for (int i = 0; i < componentCount; i++)
+            {
+                components[i].OnFrame();
+            }
+            renderComponent.Render();
         }
     }
 }

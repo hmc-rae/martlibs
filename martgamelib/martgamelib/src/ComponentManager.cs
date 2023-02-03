@@ -46,5 +46,21 @@ namespace martgamelib.src
         }
     }
 
+    public class SceneManifest
+    {
+        public uint PoolSize;
+        public uint WorkerCount;
+        public EntityManifest[] Entities;
+    }
 
+    public class EntityManifest
+    {
+        public FlagStruct Flags;
+        public ComponentManifest[] Components;
+    }
+    public class ComponentManifest
+    {
+        public string TypeName;
+        public string JSONFields;
+    }
 }
