@@ -1,4 +1,5 @@
-﻿using martlib;
+﻿using communistOverhaul;
+using martlib;
 using SFML.System;
 using System;
 using System.Collections.Generic;
@@ -18,11 +19,13 @@ namespace martgamelib.src
         private GameScene scene;
         private InputManager input;
         private GameWindow window;
-        private Runtimer timer;
+        private Runtimer timerA, timerB;
+        private TickRunner tickRunner;
 
         public GameScene CurrentScene => scene;
         public InputManager Input => input;
-        public Runtimer Time => timer;  
+        public Runtimer FrameTime => timerA;
+        public Runtimer TickTime => timerB;
         public GameWindow Window => window;
 
         public martgame(WindowDetails w, LogisticDetails l)
@@ -34,8 +37,11 @@ namespace martgamelib.src
 
             input = new InputManager();
             window = new GameWindow(w.Width, w.Height, w.Title, input, w.Fullscreen ? GameWindow.FULLSCREEN_STYLE : GameWindow.DEFAULT_STYLE);
-            timer = new Runtimer(1000 / l.FrameRate);
+            timerA = new Runtimer(1000 / l.FrameRate);
+            timerB = new Runtimer(1000 / l.TickRate);
             scene = new GameScene(l.ObjectPoolSize, l.WorkerThreadCount, this);
+
+            tickRunner = new TickRunner(scene, this);
         }
         public martgame(WindowDetails w, LogisticDetails l, string directoryPath, string entityPath, string libsPath)
         {
@@ -45,23 +51,36 @@ namespace martgamelib.src
 
             input = new InputManager();
             window = new GameWindow(w.Width, w.Height, w.Title, input, w.Fullscreen ? GameWindow.FULLSCREEN_STYLE : GameWindow.DEFAULT_STYLE);
-            timer = new Runtimer(1000 / l.FrameRate);
+            timerA = new Runtimer(1000 / l.FrameRate);
+            timerB = new Runtimer(1000 / l.TickRate);
             scene = new GameScene(l.ObjectPoolSize, l.WorkerThreadCount, this);
+            window.ChangeScene(scene);
+
+            tickRunner = new TickRunner(scene, this);
         }
 
+        internal bool ChangedScene = false;
         public void Run()
         {
-            timer.Start();
+            timerA.Start();
             while (window.IsOpen)
             {
                 window.StartFrame();
-                scene.StartFrame();
-                scene.Synchronize();
                 window.EndFrame();
-                scene.EndFrame();
-                timer.Wait();
+
+                //Do some EoF things like check to see if the game is trying to change scenes: start loading a new scene and reset.
+                if (ChangedScene)
+                {
+                    ChangedScene = false;
+                    scene = tickRunner.scene;
+                    window.ChangeScene(scene);
+                }
+
+                timerA.Wait();
             }
+            tickRunner.ContinueRunning = false;
         }
+        
 
 
         public struct WindowDetails
@@ -75,6 +94,7 @@ namespace martgamelib.src
         {
             public uint ObjectPoolSize, WorkerThreadCount;
             public long FrameRate;
+            public long TickRate;
         }
     }
 }

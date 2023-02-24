@@ -25,6 +25,7 @@ namespace martgamelib
         //override methods
         public virtual void OnCreate() { }
         public virtual void OnDestroy() { }
+        public virtual void OnTick() { }
         public virtual void OnFrame() { }
         
         /// <summary>

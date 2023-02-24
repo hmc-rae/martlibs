@@ -4,6 +4,7 @@ using martgamelib.src;
 using martlib;
 using SFML.Window;
 using System;
+using static System.Formats.Asn1.AsnWriter;
 
 
 namespace martgamelib
@@ -15,18 +16,25 @@ namespace martgamelib
         private InputManager input;
         private Pool<GameObject> objectPool, tempPool;
         private DistributorPool distributorPool;
-        private Runtimer time;
+        private Runtimer timeA, timeB;
+
+        /// <summary>
+        /// We now have our own internal list of rendertargets, meaning scenes can be cached.
+        /// </summary>
+        internal List<RenderTarget> renderTargets;
 
         public martgame Game => martgame;
         public GameWindow GameWindow => window;
         public InputManager Input => input;
-        public Runtimer Time => time;
+        public Runtimer FrameTime => timeA;
+        public Runtimer TickTime => timeB;
 
         public GameScene(uint poolSize, uint workerCount, martgame game)
         {
             window = game.Window;
             input = game.Input;
-            time = game.Time;
+            timeA = game.FrameTime;
+            timeB = game.TickTime;
             martgame = game;
 
             objectPool = new Pool<GameObject>(poolSize);
@@ -39,6 +47,8 @@ namespace martgamelib
 
             for (int i = 0; i < workerCount; i++)
                 new WorkerPool(distributorPool);
+
+            renderTargets = new List<RenderTarget>();
         }
 
         internal void StartFrame()
@@ -50,6 +60,7 @@ namespace martgamelib
         {
             distributorPool.Synchronize();
         }
+
         internal void EndFrame()
         {
             for (int i = 0; i < tempPool.OccupiedSize; ++i)
@@ -67,6 +78,44 @@ namespace martgamelib
 
 namespace communistOverhaul
 {
+    internal class TickRunner
+    {
+        public bool ContinueRunning;
+        internal GameScene scene;
+        internal martgame game;
+        internal Thread thread;
+
+        public TickRunner(GameScene scene, martgame game)
+        {
+            ContinueRunning = true;
+            this.game = game;
+            this.scene = scene;
+        }
+
+        public void Start()
+        {
+            thread = new Thread(Run);
+            thread.Start();
+        }
+
+        internal void Run()
+        {
+            scene.TickTime.Start();
+            while (ContinueRunning)
+            {
+                scene.StartFrame();
+                scene.Synchronize();
+
+                scene.EndFrame();
+
+                //if scene ready to change, change it locally and raise flag in game
+                
+                //game.ChangedScene = true;
+
+                scene.TickTime.Wait();
+            }
+        }
+    }
     internal class DistributorPool : Communism.Distributor<GameObject>
     {
         private Pool<GameObject> objectPool;
@@ -91,8 +140,7 @@ namespace communistOverhaul
 
         protected override void ProcessObject(GameObject? obj)
         {
-            //Call all internal methods on the object
-            
+            obj.behavior();
         }
     }
 }

@@ -79,6 +79,10 @@ namespace martgamelib
 
             return false;
         }
+        internal void CreateLayer(int l)
+        {
+
+        }
         internal void BindTarget(RenderTarget target)
         {
             for (int i = 0; i < renderTargets.Count; i++)
@@ -91,6 +95,11 @@ namespace martgamelib
                     return;
                 }
             }
+        }
+
+        internal void ChangeScene(GameScene newScene)
+        {
+            renderTargets = newScene.renderTargets;
         }
     }
 

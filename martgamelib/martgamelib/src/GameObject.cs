@@ -4,6 +4,7 @@ using System.Reflection;
 using martgamelib.src;
 using martlib;
 using martlib.src;
+using Microsoft.CSharp.RuntimeBinder;
 
 //TODO: Finish the function to add behavior to a game object & enqueue it
 
@@ -16,14 +17,16 @@ namespace martgamelib
 #pragma warning disable CS8618
         internal GameScene scene;
 #pragma warning restore IDE0079 // Remove unnecessary suppression
-        internal Runtimer time;
+        internal Runtimer timeA;
+        internal Runtimer timeB;
         internal GameWindow window;
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning restore CS8618
 
         public GameScene Scene => scene;
 #pragma warning restore IDE0079 // Remove unnecessary suppression
-        public Runtimer Time => time;
+        public Runtimer FrameTime => timeA;
+        public Runtimer TickTime => timeB;
         public GameWindow GameWindow => window;
 
         internal Dictionary<Type, BehaviorComponent> table;
@@ -46,7 +49,8 @@ namespace martgamelib
         public GameObject(GameScene scene, string PositionData)
         {
             this.scene = scene;
-            time = scene.Time;
+            timeA = scene.FrameTime;
+            timeB = scene.TickTime;
             window = scene.GameWindow;
 
             table = new Dictionary<Type, BehaviorComponent>(32);
@@ -138,6 +142,13 @@ namespace martgamelib
             }
         }
         internal void behavior()
+        {
+            for (int i = 0; i < componentCount; i++)
+            {
+                components[i].OnTick();
+            }
+        }
+        internal void render()
         {
             for (int i = 0; i < componentCount; i++)
             {
