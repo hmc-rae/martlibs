@@ -30,6 +30,10 @@ namespace martlib
 #pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 #pragma warning restore CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
     {
+        public static Vector ZERO
+        {
+            get { return new Vector(0, 0); }
+        }
         public static Vector UNIT_X
         {
             get { return new Vector(1, 0); }
@@ -37,6 +41,10 @@ namespace martlib
         public static Vector UNIT_Y
         {
             get { return new Vector(0, 1); }
+        }
+        public static Vector XY
+        {
+            get { return new Vector(1, 1); }
         }
 
         public double X, Y;

@@ -6,9 +6,11 @@ namespace martlib
     {
         internal T[] data;
         internal uint pos, max;
+        internal uint stretch;
         public Pool(uint capacity) {
             data = new T[capacity];
             pos = 0;
+            stretch = 0;
             max = capacity;
         }
 
@@ -41,7 +43,9 @@ namespace martlib
         {
             if (pos >= max) throw new ObjectPoolOverflowException(this);
             data[pos++] = item;
+            if (pos > stretch) stretch = pos;
         }
+
         public void Insert(int i, T item)
         {
             if (i < 0) throw new IndexOutOfRangeException();
@@ -76,12 +80,12 @@ namespace martlib
         /// </summary>
         public void PurgeUnused()
         {
-            for (uint i = pos; i < max; ++i)
+            for (uint i = pos; i < stretch; ++i)
             {
                 data[i] = default;
             }
+            stretch = pos;
         }
-
         /// <summary>
         /// Does nothing lol. Fix it later.
         /// </summary>
@@ -99,8 +103,6 @@ namespace martlib
         { 
             
         }
-
-
 
         internal class ObjectPoolOverflowException : Exception
         {

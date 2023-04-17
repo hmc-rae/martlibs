@@ -7,6 +7,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/* TODO:
+ * Implement prefab generation into GameObject.cs
+ * Prefab loading on game load.
+ * RenderComponents need to be made
+ * ComponentReader gotta be figured out
+ * 
+ */
+
 namespace martgamelib.src
 {
     public class martgame
@@ -24,8 +32,8 @@ namespace martgamelib.src
 
         public GameScene CurrentScene => scene;
         public InputManager Input => input;
-        public Runtimer FrameTime => timerA;
-        public Runtimer TickTime => timerB;
+        public Runtimer FrameTime => timerA;    //Timer that controls rendering
+        public Runtimer TickTime => timerB;     //Timer that controls background ticks
         public GameWindow Window => window;
 
         public martgame(WindowDetails w, LogisticDetails l)
@@ -33,7 +41,9 @@ namespace martgamelib.src
             SpriteHandler.Initialize($"{Directory.GetCurrentDirectory()}\\Assets\\YellowPages\\TextureDirectory.path", $"{Directory.GetCurrentDirectory()}\\Assets\\YellowPages\\EntityAnimations.path");
 
             //Initialize component reader to default directory
-            //It'll be Assets\\Scripts, read all files in there for valid
+            //It'll be Assets\\Scripts, read all .dll in there for valid
+
+            //Initialize prefab reader
 
             input = new InputManager();
             window = new GameWindow(w.Width, w.Height, w.Title, input, w.Fullscreen ? GameWindow.FULLSCREEN_STYLE : GameWindow.DEFAULT_STYLE);
@@ -60,12 +70,20 @@ namespace martgamelib.src
         }
 
         internal bool ChangedScene = false;
+
+        /// <summary>
+        /// Starts the game.
+        /// </summary>
         public void Run()
         {
             timerA.Start();
+            tickRunner.Start();
             while (window.IsOpen)
             {
                 window.StartFrame();
+
+                //Go through each item and run it's render logic
+
                 window.EndFrame();
 
                 //Do some EoF things like check to see if the game is trying to change scenes: start loading a new scene and reset.

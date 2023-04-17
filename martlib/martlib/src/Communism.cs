@@ -127,8 +127,6 @@ namespace martlib
                 SynchLatch = client.SynchLatch;
                 SynchLatch.AddParticipant();
 
-                
-
                 mThread = new Thread(new ThreadStart(run));
                 mThread.Start();
 

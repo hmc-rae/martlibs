@@ -45,12 +45,12 @@ namespace martgamelib
 
         public Color clearColor;
 
-        public void StartFrame()
+        internal void StartFrame()
         {
             DispatchEvents();
             Clear(clearColor);
         }
-        public void EndFrame()
+        internal void EndFrame()
         {
             for (int i = 0; i < renderTargets.Count; i++)
             {

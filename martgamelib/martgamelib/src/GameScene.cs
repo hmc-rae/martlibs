@@ -4,6 +4,7 @@ using martgamelib.src;
 using martlib;
 using SFML.Window;
 using System;
+using System.Runtime.Remoting;
 using static System.Formats.Asn1.AsnWriter;
 
 
@@ -17,6 +18,13 @@ namespace martgamelib
         private Pool<GameObject> objectPool, tempPool;
         private DistributorPool distributorPool;
         private Runtimer timeA, timeB;
+
+        internal bool ChangeScene = false;
+        internal GameScene? nextScene;
+
+        //A destroy queue - logs the position in a list here.
+        internal int[] rems;
+        internal uint remspos;
 
         /// <summary>
         /// We now have our own internal list of rendertargets, meaning scenes can be cached.
@@ -40,7 +48,7 @@ namespace martgamelib
             objectPool = new Pool<GameObject>(poolSize);
             tempPool = new Pool<GameObject>(poolSize);
 
-            distributorPool = new DistributorPool(objectPool);
+            distributorPool = new DistributorPool(objectPool, this);
 
             if (workerCount == 0) 
                 workerCount = 1;
@@ -49,6 +57,9 @@ namespace martgamelib
                 new WorkerPool(distributorPool);
 
             renderTargets = new List<RenderTarget>();
+
+            rems = new int[poolSize];
+            remspos = 0;
         }
 
         internal void StartFrame()
@@ -63,6 +74,19 @@ namespace martgamelib
 
         internal void EndFrame()
         {
+            //Step 1 - Cycle backwards through rems, removing all that you encounter.
+            for (uint i = remspos - 1; i >= 0; i--)
+            {
+                objectPool.Remove(rems[i]);
+            }
+
+            if (remspos > 0)
+            {
+                remspos = 0;
+                objectPool.PurgeUnused();
+            }
+
+            //Add all EOF objects.
             for (int i = 0; i < tempPool.OccupiedSize; ++i)
             {
                 var obj = tempPool.Get(i);
@@ -73,6 +97,65 @@ namespace martgamelib
             tempPool.Flush();
             tempPool.PurgeUnused();
         }
+
+        private uint scid;
+        public GameObject Instantiate()
+        {
+            if (objectPool.OccupiedSize >= objectPool.MaxSize)
+            {
+                //TODO: THROW CONSOLE ERROR
+                return null;
+            }
+
+            GameObject obj = new GameObject(this);
+            obj.objid = scid++;
+            tempPool.Add(obj);
+
+            return obj;
+        }
+        public GameObject Instantiate(Transform origin)
+        {
+            if (objectPool.OccupiedSize >= objectPool.MaxSize)
+            {
+                //TODO: THROW CONSOLE ERROR
+                return null;
+            }
+
+            GameObject obj = new GameObject(this, origin);
+            obj.objid = scid++;
+            tempPool.Add(obj);
+
+            return obj;
+        }
+
+        public GameObject InstantiateUrgent()
+        {
+            if (objectPool.OccupiedSize >= objectPool.MaxSize)
+            {
+                //TODO: THROW CONSOLE ERROR
+                return null;
+            }
+
+            GameObject obj = new GameObject(this);
+            obj.objid = scid++;
+            objectPool.Add(obj);
+
+            return obj;
+        }
+        public GameObject InstantiateUrgent(Transform origin)
+        {
+            if (objectPool.OccupiedSize >= objectPool.MaxSize)
+            {
+                //TODO: THROW CONSOLE ERROR
+                return null;
+            }
+
+            GameObject obj = new GameObject(this, origin);
+            obj.objid = scid++;
+            objectPool.Add(obj);
+
+            return obj;
+        }
     }
 }
 
@@ -80,21 +163,21 @@ namespace communistOverhaul
 {
     internal class TickRunner
     {
-        public bool ContinueRunning;
+        internal bool ContinueRunning;
         internal GameScene scene;
         internal martgame game;
-        internal Thread thread;
+        private Thread thread;
 
         public TickRunner(GameScene scene, martgame game)
         {
             ContinueRunning = true;
             this.game = game;
             this.scene = scene;
+            thread = new Thread(Run);
         }
 
-        public void Start()
+        internal void Start()
         {
-            thread = new Thread(Run);
             thread.Start();
         }
 
@@ -108,26 +191,39 @@ namespace communistOverhaul
 
                 scene.EndFrame();
 
-                //if scene ready to change, change it locally and raise flag in game
-                
-                //game.ChangedScene = true;
-
                 scene.TickTime.Wait();
+
+                //if scene ready to change, change it locally and raise flag in game
+                if (scene.ChangeScene)
+                {
+                    this.scene = scene.nextScene;
+                    game.ChangedScene = true;
+                }
             }
         }
     }
     internal class DistributorPool : Communism.Distributor<GameObject>
     {
         private Pool<GameObject> objectPool;
+        internal GameScene scene;
 
-        public DistributorPool(Pool<GameObject> objects)
+        public DistributorPool(Pool<GameObject> objects, GameScene scene)
         {
             objectPool = objects;
+            this.scene = scene;
         }
 
         protected override GameObject? getFromCollection(int i)
         {
-            return objectPool.Get(i);
+            GameObject? obj = objectPool.Get(i);
+            if (obj != null)
+            {
+                if (obj.destroy)
+                {
+                    scene.rems[scene.remspos++] = i;
+                }
+            }
+            return obj;
         }
         protected override bool isComplete(int i)
         {
@@ -140,7 +236,8 @@ namespace communistOverhaul
 
         protected override void ProcessObject(GameObject? obj)
         {
-            obj.behavior();
+            if (obj != null && !obj.destroy && obj.Alive)
+                obj.behavior();
         }
     }
 }

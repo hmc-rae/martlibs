@@ -12,6 +12,9 @@ namespace martgamelib
 {
     public class GameObject
     {
+        internal uint objid;
+        internal bool destroy;
+
         //private stuff that cannot be edited but has public gets
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable CS8618
@@ -37,6 +40,8 @@ namespace martgamelib
         internal RenderComponent renderComponent;
 
         public FlagStruct Flags;
+        public bool Alive;
+
         public Transform Transform => transformComponent;
         public RenderComponent RenderComponent => renderComponent;
 
@@ -46,7 +51,7 @@ namespace martgamelib
         /// </summary>
         /// <param name="scene"></param>
         /// <param name="PositionData"></param>
-        public GameObject(GameScene scene, string PositionData)
+        public GameObject(GameScene scene, Transform origin)
         {
             this.scene = scene;
             timeA = scene.FrameTime;
@@ -57,7 +62,33 @@ namespace martgamelib
             components = new List<BehaviorComponent>(32);
 
             Flags = new FlagStruct();
+
+            transformComponent = new Transform(0, 0);
+
+            freshMade = true;
         }
+        /// <summary>
+        /// Generates a fresh GameObject with a given prefab.
+        /// </summary>
+        /// <param name="scene"></param>
+        /// <param name="prefab"></param>
+        public GameObject(GameScene scene, Prefab prefab)
+        {
+            this.scene = scene;
+            timeA = scene.FrameTime;
+            timeB = scene.TickTime;
+            window = scene.GameWindow;
+
+            table = new Dictionary<Type, BehaviorComponent>(32);
+            components = new List<BehaviorComponent>(32);
+
+            transformComponent = new Transform(0, 0);
+
+            Flags = new FlagStruct();
+
+            freshMade = true;
+        }
+
         /// <summary>
         /// Generates a fresh GameObject at a default position.
         /// </summary>
@@ -65,14 +96,17 @@ namespace martgamelib
         public GameObject(GameScene scene)
         {
             this.scene = scene;
-            time = scene.Time;
+            timeA = scene.FrameTime;
+            timeB = scene.TickTime;
             window = scene.GameWindow;
 
             table = new Dictionary<Type, BehaviorComponent>(32);
             components = new List<BehaviorComponent>(32);
 
-            transformComponent = AddBehavior(typeof(Transform)) as Transform;
+            transformComponent = new Transform(0, 0);
             Flags = new FlagStruct();
+
+            freshMade = true;
         }
 
         /// <summary>
@@ -87,7 +121,7 @@ namespace martgamelib
             if (obj as BehaviorComponent == null || obj is BehaviorComponent)
                 return null;
 
-            //Add it and queue for EoF update
+            //Add it to the object actual.
             addToObject(obj as BehaviorComponent, componentType);
 
             return obj as BehaviorComponent;
@@ -119,11 +153,15 @@ namespace martgamelib
             if (table.ContainsKey(componentType)) return false; //cant add if already exist
 
             if (component as RenderComponent != null)
-                renderComponent = component as RenderComponent;
+                if (RenderComponent == null)
+                    renderComponent = component as RenderComponent;
+                else
+                    return false;
 
             component.parent = this;
             component.scene = scene;
-            component.time = time;
+            component.timeA = timeA;
+            component.timeB = timeB;
             component.inputManager = scene.Input;
 
             table.Add(componentType, component);
@@ -131,15 +169,21 @@ namespace martgamelib
 
             ++componentCount;
 
+            if (!freshMade)
+                component.OnCreate();
+
             return true;
         }
+
         //runs the create functions on all components
+        internal bool freshMade = true;
         internal void create()
         {
             for (int i = 0; i < componentCount; i++)
             {
                 components[i].OnCreate();
             }
+            freshMade = false;
         }
         internal void behavior()
         {
@@ -154,7 +198,8 @@ namespace martgamelib
             {
                 components[i].OnFrame();
             }
-            renderComponent.Render();
+            if (RenderComponent != null)
+                renderComponent.Render();
         }
     }
 }
