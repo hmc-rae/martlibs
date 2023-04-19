@@ -1,14 +1,9 @@
 ﻿using SFML.Graphics;
 using SFML.System;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
-namespace martgamelib.src
+namespace martgamelib
 {
     public static class SpriteHandler
     {
@@ -17,10 +12,19 @@ namespace martgamelib.src
         internal static TextureDirectory textureDirectory;
         public static void Initialize(string directoryPath, string entityEntryPath)
         {
-            entEntry = JsonSerializer.Deserialize<EntityEntry[]>(entityEntryPath);
             textureDirectory = JsonSerializer.Deserialize<TextureDirectory>(directoryPath);
+            entEntry = JsonSerializer.Deserialize<EntityEntry[]>(entityEntryPath);
+
+            if (textureDirectory == null) throw new ArgumentException($"Path {directoryPath} is invalid for textureDirectory.");
+            if (entEntry == null) throw new ArgumentException($"Path {entityEntryPath} is invalid for entEntry");
         }
-        public static EntityEntry GetEntityAnimations(int EntityID)
+        /// <summary>
+        /// Returns the EntityEntry for the respective entity - a package representing all animations of the entity.<br></br>
+        /// A single entity can have multiple states, with each state having multiple frames of animation.
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <returns></returns>
+        public static EntityEntry? GetEntityAnimations(int EntityID)
         {
             for (int i = 0; i < entEntry.Length; i++)
             {
@@ -116,7 +120,6 @@ namespace martgamelib.src
             }
         }
     }
-
     public class TextureDirectory
     {
         public int textureCount;

@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 //TODO: Render function for SpriteComponent
 
-namespace martgamelib.src
+namespace martgamelib
 {
     public class RenderComponent : BehaviorComponent
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace martlib.src
+namespace martlib
 {
     /// <summary>
     /// A type of rotating queue. Objects pushed into the buffer will take up an addressable index, but after enough objects are pushed they will rotate out of the buffer.

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text.Json;
 using System.Reflection;
-using martgamelib.src;
 using martlib;
 using martlib.src;
 using Microsoft.CSharp.RuntimeBinder;
@@ -63,7 +62,7 @@ namespace martgamelib
 
             Flags = new FlagStruct();
 
-            transformComponent = new Transform(0, 0);
+            transformComponent = origin;
 
             freshMade = true;
         }
@@ -88,7 +87,28 @@ namespace martgamelib
 
             freshMade = true;
         }
+        /// <summary>
+        /// Generates a fresh GameObject with a given prefab at a given position.
+        /// </summary>
+        /// <param name="scene"></param>
+        /// <param name="prefab"></param>
+        /// <param name="origin"></param>
+        public GameObject(GameScene scene, Prefab prefab, Transform origin)
+        {
+            this.scene = scene;
+            timeA = scene.FrameTime;
+            timeB = scene.TickTime;
+            window = scene.GameWindow;
 
+            table = new Dictionary<Type, BehaviorComponent>(32);
+            components = new List<BehaviorComponent>(32);
+
+            transformComponent = origin;
+
+            Flags = new FlagStruct();
+
+            freshMade = true;
+        }
         /// <summary>
         /// Generates a fresh GameObject at a default position.
         /// </summary>
@@ -108,6 +128,7 @@ namespace martgamelib
 
             freshMade = true;
         }
+
 
         /// <summary>
         /// Adds a new behavior component to this gameobject.
@@ -145,6 +166,16 @@ namespace martgamelib
             addToObject(obj as BehaviorComponent, componentType);
 
             return obj as BehaviorComponent;
+        }
+        /// <summary>
+        /// Adds a provided behavior component to this object.
+        /// </summary>
+        /// <param name="component"></param>
+        /// <returns></returns>
+        public BehaviorComponent? AddBehavior(BehaviorComponent component)
+        {
+            addToObject(component, component.GetType());
+            return component;
         }
 
         //Return true if successfully added

@@ -1,24 +1,60 @@
 ﻿using martlib.src;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-namespace martgamelib.src
+namespace martgamelib
 {
-    public static class PrefabLibrary
+    public class PrefabLibrary
     {
-        public static Prefab[] Prefabs; //YIPPEE
+        public List<Prefab> Prefabs; //YIPPEE
 
-        public static Prefab GetPrefab(string name)
+        public PrefabLibrary()
         {
-            for (int i = 0; i < Prefabs.Length; i++)
+            Prefabs = new List<Prefab>();
+        }
+
+        /// <summary>
+        /// Returns the prefab by the provided name. Will return null if it doesn't exist.
+        /// TODO: Search in log n time instead of n time.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public Prefab? GetPrefab(string name)
+        {
+            for (int i = 0; i < Prefabs.Count; i++)
             {
                 if (Prefabs[i].PrefabName.Equals(name))
                     return Prefabs[i];
             }
             return null;
+        }
+        public void LoadPrefabs(string directory)
+        {
+            Prefabs = new List<Prefab>();
+
+            Functions.Seek(directory, LoadPrefabsFromFile);
+        }
+
+        /// <summary>
+        /// Specifically load .PFAB files
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <returns></returns>
+        internal int LoadPrefabsFromFile(string filename)
+        {
+            if (!filename.ToLower().EndsWith(".pfab")) return -1;
+
+            Prefab[]? tempPrefabArray = JsonSerializer.Deserialize<Prefab[]>(filename);
+
+            if (tempPrefabArray == null) return -1;
+
+            for (int i = 0; i < tempPrefabArray.Length; i++)
+            {
+                tempPrefabArray[i].Construct();
+                Prefabs.Add(tempPrefabArray[i]);
+            }
+
+            return 0;
         }
     }
     public class Prefab
@@ -30,10 +66,28 @@ namespace martgamelib.src
 
         public ComponentFab[] components;
 
+        public void Construct()
+        {
+            for (int i = 0; i < components.Length; i++)
+            {
+                components[i].ctype = ComponentManager.GetTypeFromName(components[i].ComponentType);
+            }
+        }
+
         public class ComponentFab
         {
-            public Type ComponentType;
+            public string ComponentType;
             public string ComponentJSON;
+
+            [JsonIgnore]
+            internal Type ctype;
+        }
+    }
+    public static class SceneLoader
+    {
+        public static void LoadNewScene(GameScene currentScene)
+        {
+
         }
     }
 }

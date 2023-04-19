@@ -3,7 +3,7 @@ using System.Reflection;
 using martlib.src;
 
 
-namespace martgamelib.src
+namespace martgamelib
 {
     public static class ComponentManager
     {
@@ -34,6 +34,7 @@ namespace martgamelib.src
             {
                 var obj = Activator.CreateInstance(type);
 
+                //Check to make sure it's not a default BehaviorComponent class, and also that it is a derivation of BehaviorComponent
                 if (obj as BehaviorComponent == null || obj is BehaviorComponent) continue;
 
                 //Add the type to the list of types unless it exists
@@ -44,23 +45,5 @@ namespace martgamelib.src
 
             return 0;
         }
-    }
-
-    public class SceneManifest
-    {
-        public uint PoolSize;
-        public uint WorkerCount;
-        public EntityManifest[] Entities;
-    }
-
-    public class EntityManifest
-    {
-        public FlagStruct Flags;
-        public ComponentManifest[] Components;
-    }
-    public class ComponentManifest
-    {
-        public string TypeName;
-        public string JSONFields;
     }
 }

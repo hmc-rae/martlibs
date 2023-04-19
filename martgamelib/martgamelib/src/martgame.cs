@@ -1,21 +1,15 @@
 ﻿using communistOverhaul;
 using martlib;
 using SFML.System;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 /* TODO:
  * Implement prefab generation into GameObject.cs
- * Prefab loading on game load.
+ * Scene loaders
  * RenderComponents need to be made
- * ComponentReader gotta be figured out
  * 
  */
 
-namespace martgamelib.src
+namespace martgamelib
 {
     public class martgame
     {
@@ -29,42 +23,45 @@ namespace martgamelib.src
         private GameWindow window;
         private Runtimer timerA, timerB;
         private TickRunner tickRunner;
+        private PrefabLibrary library;
 
         public GameScene CurrentScene => scene;
         public InputManager Input => input;
         public Runtimer FrameTime => timerA;    //Timer that controls rendering
         public Runtimer TickTime => timerB;     //Timer that controls background ticks
         public GameWindow Window => window;
+        public PrefabLibrary PrefabLib => library;
 
+        public martgame()
+        {
+            generate(new WindowDetails(), new LogisticDetails(), new PathingDetails());
+        }
         public martgame(WindowDetails w, LogisticDetails l)
         {
-            SpriteHandler.Initialize($"{Directory.GetCurrentDirectory()}\\Assets\\YellowPages\\TextureDirectory.path", $"{Directory.GetCurrentDirectory()}\\Assets\\YellowPages\\EntityAnimations.path");
+            generate(w, l, new PathingDetails());
+        }
+        public martgame(WindowDetails w, LogisticDetails l, PathingDetails d)
+        {
+            generate(w, l, d);
+        }
+
+        private void generate(WindowDetails w, LogisticDetails l, PathingDetails d)
+        {
+            SpriteHandler.Initialize(d.directoryPath, d.entityPath);
 
             //Initialize component reader to default directory
             //It'll be Assets\\Scripts, read all .dll in there for valid
+            ComponentManager.Initialize(d.libsPath);
 
             //Initialize prefab reader
+            PrefabLib.LoadPrefabs(d.prefabPath);
 
             input = new InputManager();
             window = new GameWindow(w.Width, w.Height, w.Title, input, w.Fullscreen ? GameWindow.FULLSCREEN_STYLE : GameWindow.DEFAULT_STYLE);
             timerA = new Runtimer(1000 / l.FrameRate);
             timerB = new Runtimer(1000 / l.TickRate);
+
             scene = new GameScene(l.ObjectPoolSize, l.WorkerThreadCount, this);
-
-            tickRunner = new TickRunner(scene, this);
-        }
-        public martgame(WindowDetails w, LogisticDetails l, string directoryPath, string entityPath, string libsPath)
-        {
-            SpriteHandler.Initialize(directoryPath, entityPath);
-
-            //Initialize component reader to set directory
-
-            input = new InputManager();
-            window = new GameWindow(w.Width, w.Height, w.Title, input, w.Fullscreen ? GameWindow.FULLSCREEN_STYLE : GameWindow.DEFAULT_STYLE);
-            timerA = new Runtimer(1000 / l.FrameRate);
-            timerB = new Runtimer(1000 / l.TickRate);
-            scene = new GameScene(l.ObjectPoolSize, l.WorkerThreadCount, this);
-            window.ChangeScene(scene);
 
             tickRunner = new TickRunner(scene, this);
         }
@@ -98,8 +95,6 @@ namespace martgamelib.src
             }
             tickRunner.ContinueRunning = false;
         }
-        
-
 
         public struct WindowDetails
         {
@@ -107,12 +102,47 @@ namespace martgamelib.src
             public uint Width, Height;
             public Vector DotsPerUnit;
             public bool Fullscreen;
+
+            public WindowDetails()
+            {
+                Title = "Untitled Game";
+                Width = 1024;
+                Height = 1024;
+                DotsPerUnit = new Vector(32, 32);
+                Fullscreen = false;
+            }
         }
         public struct LogisticDetails
         {
             public uint ObjectPoolSize, WorkerThreadCount;
             public long FrameRate;
             public long TickRate;
+            public string DefaultScene;
+
+            public LogisticDetails()
+            {
+                ObjectPoolSize = 2048;
+                WorkerThreadCount = 4;
+                FrameRate = 60;
+                TickRate = 60;
+                DefaultScene = "";
+            }
+        }
+        public struct PathingDetails
+        {
+            public string directoryPath, entityPath, libsPath, prefabPath;
+            public PathingDetails()
+            {
+                //The two files for reading where animations are located.
+                directoryPath = $"{Directory.GetCurrentDirectory()}\\Assets\\YellowPages\\TextureDirectory.path";
+                entityPath = $"{Directory.GetCurrentDirectory()}\\Assets\\YellowPages\\EntityAnimations.path";
+
+                //Library pointing to all the user-defined code
+                libsPath = $"{Directory.GetCurrentDirectory()}\\Assets\\Scripts";
+
+                //Location of all prefabs to be utilized in-game.
+                prefabPath = $"{Directory.GetCurrentDirectory()}\\Assets\\Prefabs";
+            }
         }
     }
 }

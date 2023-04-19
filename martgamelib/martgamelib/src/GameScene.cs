@@ -1,11 +1,6 @@
 ﻿using communistOverhaul;
 using martgamelib;
-using martgamelib.src;
 using martlib;
-using SFML.Window;
-using System;
-using System.Runtime.Remoting;
-using static System.Formats.Asn1.AsnWriter;
 
 
 namespace martgamelib
@@ -140,6 +135,8 @@ namespace martgamelib
             obj.objid = scid++;
             objectPool.Add(obj);
 
+            obj.freshMade = false;
+
             return obj;
         }
         public GameObject InstantiateUrgent(Transform origin)
@@ -153,6 +150,8 @@ namespace martgamelib
             GameObject obj = new GameObject(this, origin);
             obj.objid = scid++;
             objectPool.Add(obj);
+
+            obj.freshMade = false;
 
             return obj;
         }

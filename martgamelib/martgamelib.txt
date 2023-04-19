@@ -1,0 +1,5 @@
+FILETYPES ASSOCIATED WITH PROJECT
+
+.path		Associated with sprites. Can be changed.
+.pfab		Associated with prefabs. Files with .pfab will be read for prefabs. Cannot be changed.
+.dll		Associated with scripts. .dll files will be scraped for any derivatives of BehaviorComponents.

@@ -2,7 +2,6 @@
 using martlib;
 using SFML.Graphics;
 using SFML.Window;
-using martgamelib.src;
 using SFML.System;
 
 namespace martgamelib

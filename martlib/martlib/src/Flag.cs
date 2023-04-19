@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace martlib.src
+namespace martlib
 {
     /// <summary>
     /// Represents a string of 64 flags, either high (1) or low (0). Depicted to the user by a 64-bit number.
