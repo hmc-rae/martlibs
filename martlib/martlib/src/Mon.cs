@@ -78,9 +78,6 @@ namespace martlib
             objectEntry obje = new objectEntry(obj, objid++, bufferdefault);
             objects.Add(obje);
 
-            //Write its ID into the the buffer it holds if it is a class of some form
-            if (obj.GetType().IsClass)
-                obje.data = Functions.BitReaders.Write(obje.data, obje.identifier, ref obje.position);
 
             processmain(obj, obje, objects, ref objid);
 
@@ -151,7 +148,6 @@ namespace martlib
             {
                 objects.Add(obje);
                 obje.identifier = pos;
-                pos += 8;
             }
 
             //Once it reads a 0 character it'll terminate.
@@ -163,18 +159,16 @@ namespace martlib
                 FieldInfo? fieldInfo = type.GetField(field);
                 if (fieldInfo == null)
                 {
-                    throw new FieldAccessException($"Invalid field {field} in type {type}\t\t@{pos} in byte stream.");
+                    throw new FieldAccessException($"Invalid field {field} in type {type}\t\t@0x{pos.ToString("X")} ({pos}) in byte stream.");
                 }
 
                 bool isclass, isstruct, isarray, isprimitive, isstring;
                 gettypes(fieldInfo, out isclass, out isstruct, out isarray, out isprimitive, out isstring);
 
-                Console.WriteLine($"Reading a {fieldInfo.FieldType} into field {field}");
-
                 if (isprimitive)
                 {
                     dynamic val = Activator.CreateInstance(fieldInfo.FieldType);
-                    Functions.BitReaders.Read(data, ref pos, val);
+                    val = Functions.BitReaders.Read(data, ref pos, val);
                     fieldInfo.SetValue(obj, val);
                 }
                 else if (isstring)
@@ -191,7 +185,7 @@ namespace martlib
                     objectEntry tmp = dprocess(val, fieldInfo.FieldType, objects, data, pos);
                     val = tmp.obj;
                     fieldInfo.SetValue(obj, val);
-                    pos += tmp.position;
+                    pos = tmp.position;
 
                 }
                 else if (isclass)
@@ -224,6 +218,8 @@ namespace martlib
                 }
 
             }
+
+            obje.position = pos + 1;
 
             return obje;
         }
