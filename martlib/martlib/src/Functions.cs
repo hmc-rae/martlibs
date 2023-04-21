@@ -174,6 +174,9 @@ namespace martlib
                         output = Double(output);
                     output[position++] = (byte)chars[i];
                 }
+                if (position >= (ulong)output.Length)
+                    output = Double(output);
+                output[position++] = 0;
                 return output;
             }
 
@@ -182,7 +185,7 @@ namespace martlib
                 output = 0;
                 for (int i = 0; i < 2; i++)
                 {
-                    output = (short)(data[position++] << (i * 8));
+                    output += (short)(data[position++] << (i * 8));
                 }
             }
             public static void Read(byte[] data, ref ulong position, out ushort output)
@@ -190,45 +193,103 @@ namespace martlib
                 output = 0;
                 for (int i = 0; i < 2; i++)
                 {
-                    output = (ushort)(data[position++] << (i * 8));
+                    output += (ushort)(data[position++] << (i * 8));
                 }
             }
-            public static void Read(byte[] data, ref ulong position, out int output)
+            public static short Read(byte[] data, ref ulong position, short output)
             {
                 output = 0;
                 for (int i = 0; i < 2; i++)
                 {
-                    output = (int)(data[position++] << (i * 8));
+                    output += (short)(data[position++] << (i * 8));
+                }
+                return output;
+            }
+            public static ushort Read(byte[] data, ref ulong position, ushort output)
+            {
+                output = 0;
+                for (int i = 0; i < 2; i++)
+                {
+                    output += (ushort)(data[position++] << (i * 8));
+                }
+                return output;
+            }
+            public static void Read(byte[] data, ref ulong position, out int output)
+            {
+                output = 0;
+                for (int i = 0; i < 4; i++)
+                {
+                    output += (int)(data[position++] << (i * 8));
                 }
             }
             public static void Read(byte[] data, ref ulong position, out uint output)
             {
                 output = 0;
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < 4; i++)
                 {
-                    output = (uint)(data[position++] << (i * 8));
+                    output += (uint)(data[position++] << (i * 8));
                 }
+            }
+            public static int Read(byte[] data, ref ulong position, int output)
+            {
+                output = 0;
+                for (int i = 0; i < 4; i++)
+                {
+                    output += (int)(data[position++] << (i * 8));
+                }
+                return output;
+            }
+            public static uint Read(byte[] data, ref ulong position, uint output)
+            {
+                output = 0;
+                for (int i = 0; i < 4; i++)
+                {
+                    output += (uint)(data[position++] << (i * 8));
+                }
+                return output;
             }
             public static void Read(byte[] data, ref ulong position, out long output)
             {
                 output = 0;
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < 8; i++)
                 {
-                    output = (long)(data[position++] << (i * 8));
+                    output += (long)(data[position++] << (i * 8));
                 }
             }
             public static void Read(byte[] data, ref ulong position, out ulong output)
             {
                 output = 0;
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < 8; i++)
                 {
-                    output = (ulong)(data[position++] << (i * 8));
+                    output += (ulong)(data[position++] << (i * 8));
                 }
+            }
+            public static long Read(byte[] data, ref ulong position, long output)
+            {
+                output = 0;
+                for (int i = 0; i < 8; i++)
+                {
+                    output += (long)(data[position++] << (i * 8));
+                }
+                return output;
+            }
+            public static ulong Read(byte[] data, ref ulong position, ulong output)
+            {
+                output = 0;
+                for (int i = 0; i < 8; i++)
+                {
+                    output += (ulong)(data[position++] << (i * 8));
+                }
+                return output;
             }
 
             public static void Read(byte[] data, ref ulong position, out bool output)
             {
                 output = data[position++] != 0;
+            }
+            public static bool Read(byte[] data, ref ulong position, bool output)
+            {
+                return data[position++] != 0;
             }
 
             public static void Read(byte[] data, ref ulong position, out float output)
@@ -243,6 +304,18 @@ namespace martlib
                 Read(data, ref position, out tmp);
                 output = BitConverter.Int64BitsToDouble(tmp);
             }
+            public static float Read(byte[] data, ref ulong position, float output)
+            {
+                int tmp;
+                Read(data, ref position, out tmp);
+                return BitConverter.Int32BitsToSingle(tmp);
+            }
+            public static double Read(byte[] data, ref ulong position, double output)
+            {
+                long tmp;
+                Read(data, ref position, out tmp);
+                return BitConverter.Int64BitsToDouble(tmp);
+            }
 
             public static void Read(byte[] data, ref ulong position, out string output)
             {
@@ -251,6 +324,17 @@ namespace martlib
                 {
                     output += (char)data[position];
                 }
+                position++;
+            }
+            public static string Read(byte[] data, ref ulong position, string output)
+            {
+                output = "";
+                for (; data[position] != 0; position++)
+                {
+                    output += (char)data[position];
+                }
+                position++;
+                return output;
             }
         }
     }

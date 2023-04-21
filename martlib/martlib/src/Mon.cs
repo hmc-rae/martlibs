@@ -20,6 +20,7 @@ namespace martlib
 
             for (int i = 0; i < objs.Count; i++)
             {
+                objs[i].wrap();
                 objs[i].startposition = bytecount;
                 bytecount += objs[i].position;
             }
@@ -39,7 +40,31 @@ namespace martlib
 
             return data;
         }
+        public static object? Deserialize(byte[] data, Type type)
+        {
+            dynamic obj = Activator.CreateInstance(type);
 
+            List<objectEntry> objects = new List<objectEntry>();
+            ulong pos = 0;
+
+            objectEntry result = dprocess(obj, type, objects, data, pos);
+
+            return result.obj;
+        }
+        public static T Deserialize<T>(byte[] data)
+        {
+            T obj = Activator.CreateInstance<T>();
+
+            List<objectEntry> objects = new List<objectEntry>();
+            ulong pos = 0;
+
+            objectEntry result = dprocess(obj, obj.GetType(), objects, data, pos);
+
+            return (T)result.obj;
+        }
+
+
+        //SERIALIZATION
         /// <summary>
         /// Recursive method to process all objects.
         /// </summary>
@@ -47,7 +72,7 @@ namespace martlib
         /// <param name="obj"></param>
         /// <param name="objects"></param>
         /// <param name="objid"></param>
-        private static void process<T>(T obj, List<objectEntry> objects, ref ulong objid)
+        private static objectEntry process<T>(T obj, List<objectEntry> objects, ref ulong objid)
         {
             //Add this object to the list
             objectEntry obje = new objectEntry(obj, objid++, bufferdefault);
@@ -58,8 +83,9 @@ namespace martlib
                 obje.data = Functions.BitReaders.Write(obje.data, obje.identifier, ref obje.position);
 
             processmain(obj, obje, objects, ref objid);
-        }
 
+            return obje;
+        }
         private static void processmain<T>(T obj, objectEntry obje, List<objectEntry> objects, ref ulong objid)
         {
             FieldInfo[] fields = obj.GetType().GetFields();
@@ -68,23 +94,21 @@ namespace martlib
                 FieldInfo field = fields[i];
 
                 dynamic val = field.GetValue(obj);
-                bool isclass = field.GetValue(obj).GetType().IsClass;
-                bool isstruct = field.GetValue(obj).GetType().IsValueType && !field.GetValue(obj).GetType().IsEnum && !field.GetValue(obj).GetType().IsPrimitive;
-                bool isarray = field.GetValue(obj).GetType().IsArray;
-                bool isprimitive = field.GetValue(obj).GetType().IsPrimitive;
+                bool isclass, isstruct, isarray, isprimitive, isstring;
+                gettypes(field, out isclass, out isstruct, out isarray, out isprimitive, out isstring);
 
                 obje.data = Functions.BitReaders.Write(obje.data, field.Name, ref obje.position);
-                if ((isprimitive && !(isclass || isstruct || isarray)) || field.GetValue(obj).GetType() == typeof(string))
+                if ((isprimitive && !(isclass || isstruct || isarray)) || field.FieldType == typeof(string))
                 {
                     obje.data = Functions.BitReaders.Write(obje.data, val, ref obje.position);
                 }
                 else if (isstruct)
                 {
                     processmain(val, obje, objects, ref objid);
+                    obje.data = Functions.BitReaders.Write(obje.data, false, ref obje.position);
                 }
                 else if (isclass)
                 {
-                    Console.WriteLine("class");
                     //Check if the object is already processed - add reference to its ID and flag it to be updated later.
                     objectEntry? target = null;
                     for (int k = 0; k < objects.Count; k++)
@@ -113,6 +137,104 @@ namespace martlib
                     //todo: arrays
                 }
             }
+        }
+
+        //DESERIALIZATION
+        private static objectEntry dprocess(object? obj, Type type, List<objectEntry> objects, byte[] data, ulong pos)
+        {
+            objectEntry obje = new objectEntry(obj, pos, bufferdefault)
+            {
+                position = pos
+            };
+
+            if (obj.GetType().IsClass)
+            {
+                objects.Add(obje);
+                obje.identifier = pos;
+                pos += 8;
+            }
+
+            //Once it reads a 0 character it'll terminate.
+            while (data[pos] != 0)
+            {
+                string field;
+                Functions.BitReaders.Read(data, ref pos, out field);
+
+                FieldInfo? fieldInfo = type.GetField(field);
+                if (fieldInfo == null)
+                {
+                    throw new FieldAccessException($"Invalid field {field} in type {type}\t\t@{pos} in byte stream.");
+                }
+
+                bool isclass, isstruct, isarray, isprimitive, isstring;
+                gettypes(fieldInfo, out isclass, out isstruct, out isarray, out isprimitive, out isstring);
+
+                Console.WriteLine($"Reading a {fieldInfo.FieldType} into field {field}");
+
+                if (isprimitive)
+                {
+                    dynamic val = Activator.CreateInstance(fieldInfo.FieldType);
+                    Functions.BitReaders.Read(data, ref pos, val);
+                    fieldInfo.SetValue(obj, val);
+                }
+                else if (isstring)
+                {
+                    string val = "";
+                    Functions.BitReaders.Read(data, ref pos, out val);
+                    fieldInfo.SetValue(obj, val);
+                }
+                else if (isstruct)
+                {
+                    dynamic val = Activator.CreateInstance(fieldInfo.FieldType);
+
+                    //restart the recursive process on the struct
+                    objectEntry tmp = dprocess(val, fieldInfo.FieldType, objects, data, pos);
+                    val = tmp.obj;
+                    fieldInfo.SetValue(obj, val);
+                    pos += tmp.position;
+
+                }
+                else if (isclass)
+                {
+                    dynamic val = Activator.CreateInstance(fieldInfo.FieldType);
+
+                    ulong id;
+                    Functions.BitReaders.Read(data, ref pos, out id);
+
+                    //look to see if the object has already been created
+                    bool found = false;
+                    for (int i = 0; i < objects.Count; i++)
+                    {
+                        if (objects[i].identifier == id)
+                        {
+                            val = objects[i].obj;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    //if not created, create
+                    if (!found)
+                    {
+                        objectEntry tmp = dprocess(val, fieldInfo.FieldType, objects, data, id);
+                        val = tmp.obj;
+                    }
+
+                    fieldInfo.SetValue(obj, val);
+                }
+
+            }
+
+            return obje;
+        }
+
+        private static void gettypes(FieldInfo field, out bool isclass, out bool isstruct, out bool isarray, out bool isprimitive, out bool isstring)
+        {
+            isclass = field.FieldType.IsClass;
+            isstruct = field.FieldType.IsValueType && !field.FieldType.IsEnum && !field.FieldType.IsPrimitive;
+            isarray = field.FieldType.IsArray;
+            isprimitive = field.FieldType.IsPrimitive;
+            isstring = field.FieldType == typeof(string);
         }
         private class objectEntry
         {
@@ -152,8 +274,6 @@ namespace martlib
 
                     for (int k = 0; k < objectEntries.Count; k++)
                     {
-                        if (k == ignoreidx) continue;
-
                         if (objectEntries[k].identifier == id)
                         {
                             data = Functions.BitReaders.Write(data, objectEntries[k].startposition, ref pos);
@@ -161,6 +281,11 @@ namespace martlib
                         }
                     }
                 }
+            }
+
+            public void wrap()
+            {
+                Functions.BitReaders.Write(data, false, ref position);
             }
 
             public void appenddata(byte[] d, ref ulong idx)
