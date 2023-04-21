@@ -91,8 +91,13 @@ namespace martlib
                 FieldInfo field = fields[i];
 
                 dynamic val = field.GetValue(obj);
-                bool isclass, isstruct, isarray, isprimitive, isstring;
-                gettypes(field, out isclass, out isstruct, out isarray, out isprimitive, out isstring);
+                bool isclass, isstruct, isarray, isprimitive, isstring, include, ignore;
+                gettypes(field, out isclass, out isstruct, out isarray, out isprimitive, out isstring, out ignore, out include);
+
+                if (ignore && !include)
+                {
+                    continue;
+                }
 
                 obje.data = Functions.BitReaders.Write(obje.data, field.Name, ref obje.position);
                 if ((isprimitive && !(isclass || isstruct || isarray)) || field.FieldType == typeof(string))
@@ -162,8 +167,8 @@ namespace martlib
                     throw new FieldAccessException($"Invalid field {field} in type {type}\t\t@0x{pos.ToString("X")} ({pos}) in byte stream.");
                 }
 
-                bool isclass, isstruct, isarray, isprimitive, isstring;
-                gettypes(fieldInfo, out isclass, out isstruct, out isarray, out isprimitive, out isstring);
+                bool isclass, isstruct, isarray, isprimitive, isstring, include, ignore;
+                gettypes(fieldInfo, out isclass, out isstruct, out isarray, out isprimitive, out isstring, out ignore, out include);
 
                 if (isprimitive)
                 {
@@ -224,13 +229,21 @@ namespace martlib
             return obje;
         }
 
-        private static void gettypes(FieldInfo field, out bool isclass, out bool isstruct, out bool isarray, out bool isprimitive, out bool isstring)
+        private static void gettypes(FieldInfo field, out bool isclass, out bool isstruct, out bool isarray, out bool isprimitive, out bool isstring, out bool ignore, out bool include)
         {
             isclass = field.FieldType.IsClass;
             isstruct = field.FieldType.IsValueType && !field.FieldType.IsEnum && !field.FieldType.IsPrimitive;
             isarray = field.FieldType.IsArray;
             isprimitive = field.FieldType.IsPrimitive;
             isstring = field.FieldType == typeof(string);
+            ignore = false;
+            include = false;
+
+            foreach (CustomAttributeData data in field.CustomAttributes)
+            {
+                if (data.AttributeType == typeof(MonIgnore)) ignore = true;
+                if (data.AttributeType == typeof(MonInclude)) include = true;
+            }
         }
         private class objectEntry
         {
@@ -291,6 +304,15 @@ namespace martlib
                     d[idx++] = data[i];
                 }
             }
+        }
+
+        public class MonIgnore : Attribute
+        {
+
+        }
+        public class MonInclude : Attribute
+        {
+
         }
     }
 }
