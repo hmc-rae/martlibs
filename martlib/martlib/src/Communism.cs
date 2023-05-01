@@ -106,7 +106,8 @@ namespace martlib
             }
         }
         /// <summary>
-        /// A class.
+        /// An object that operates on items passed to it by a provided client distributor. <br></br>
+        /// Override functions in 
         /// </summary>
         /// <typeparam name="T"></typeparam>
         public abstract class Worker<T>

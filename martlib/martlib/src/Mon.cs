@@ -4,9 +4,23 @@ using System.Reflection;
 
 namespace martlib
 {
+    /// <summary>
+    /// A form of object notation which represents a data structure in a byte array, preserving reference semantics and using minimal space.
+    /// </summary>
     public static class MonSerializer
     {
+        /// <summary>
+        /// The default amount of bytes allocated to each object when converting to Mon (1kb). The buffer will automatically double whenever the limit is reached.
+        /// </summary>
         private static ulong bufferdefault = 1024;
+        /// <summary>
+        /// Converts a given object into a byte array in Mart Object Notation. <br></br>
+        /// By default, all public fields are interpreted unless tagged with attribute MonIgnore. <br></br>
+        /// References are preserved, allowing for circular references by default.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public static byte[] Serialize<T>(T obj)
         {
             List<objectEntry> objs = new List<objectEntry>();
@@ -40,6 +54,13 @@ namespace martlib
 
             return data;
         }
+        /// <summary>
+        /// Deserializes a byte array from Mart Object Notation into the given object type, preserving original references. <br></br>
+        /// Throws FieldAccessException if an invalid field is read at any point.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public static object? Deserialize(byte[] data, Type type)
         {
             dynamic obj = Activator.CreateInstance(type);
@@ -51,6 +72,13 @@ namespace martlib
 
             return result.obj;
         }
+        /// <summary>
+        /// Deserializes a byte array from Mart Object Notation into the given object type, preserving original references. <br></br>
+        /// Throws FieldAccessException if an invalid field is read at any point.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public static T Deserialize<T>(byte[] data)
         {
             T obj = Activator.CreateInstance<T>();
@@ -306,10 +334,16 @@ namespace martlib
             }
         }
 
+        /// <summary>
+        /// Attach this to a field to skip over when converting to Mon.
+        /// </summary>
         public class MonIgnore : Attribute
         {
 
         }
+        /// <summary>
+        /// Attach this to a field to ensure it is not skipped when converting to Mon.
+        /// </summary>
         public class MonInclude : Attribute
         {
 
