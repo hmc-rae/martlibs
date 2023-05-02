@@ -4,6 +4,8 @@ namespace martlib
 {
     public class Pool<T>
     {
+        public const string VERSION = "1.0";
+
         internal T[] data;
         internal uint pos, max;
         internal uint stretch;

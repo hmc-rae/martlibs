@@ -8,6 +8,8 @@ namespace martlib
     /// </summary>
     public class Runtimer
     {
+        public const string VERSION = "1.0";
+
         private const double CONV_VAL = 0.001;
 
         private Stopwatch timer;
@@ -19,6 +21,14 @@ namespace martlib
         {
             timer = new Stopwatch();
             this.targetMS = targetMS;
+            dt = targetMS * CONV_VAL;
+        }
+
+        public Runtimer(float frameRate)
+        {
+            timer = new Stopwatch();
+
+            this.targetMS = (long)(1000.0f / frameRate);
             dt = targetMS * CONV_VAL;
         }
 
@@ -51,6 +61,24 @@ namespace martlib
             get
             {
                 return dt;
+            }
+        }
+        public double LastFrameRate
+        {
+            get
+            {
+                return 1 / dt;
+            }
+        }
+        public float FrameRate
+        {
+            get
+            {
+                return 1000f / targetMS;
+            }
+            set
+            {
+                this.targetMS = (long)(1000.0f / value);
             }
         }
     }

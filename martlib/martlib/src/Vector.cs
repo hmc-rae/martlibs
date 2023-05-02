@@ -5,13 +5,13 @@
         v - v       Translate/Subtract
 
         v * v       Multiply terms
-        v * s       Multiply by single     
+        v * s       Multiply by scalar     
 
         v / v       Divide terms
-        v / s       Divide by single
+        v / s       Divide by scalar
 
         v % v       Modulo terms
-        v % s       Modulo by single
+        v % s       Modulo by scalar
 
         v ^ v       Project/rotate
 
@@ -30,6 +30,7 @@ namespace martlib
 #pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 #pragma warning restore CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
     {
+        public const string VERSION = "1.0";
         /// <summary>
         /// A vector representing <0, 0>
         /// </summary>
