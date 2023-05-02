@@ -9,7 +9,7 @@ namespace martlib
 {
     public static class Functions
     {
-        public const string VERSION = "1.0";
+        public const string VERSION = "1.0.1";
         /// <summary>
         /// Performs an operation on all files in a directory. 
         /// </summary>
@@ -179,6 +179,23 @@ namespace martlib
                     output = Double(output);
                 output[position++] = 0;
                 return output;
+            }
+
+            public static void Read(byte[] data, ref ulong position, out byte output)
+            {
+                output = data[position++];
+            }
+            public static void Read(byte[] data, ref ulong position, out sbyte output)
+            {
+                output = (sbyte)data[position++];
+            }
+            public static byte Read(byte[] data, ref ulong position, byte output)
+            {
+                return data[position++];
+            }
+            public static sbyte Read(byte[] data, ref ulong position, sbyte output)
+            {
+                return (sbyte)data[position++];
             }
 
             public static void Read(byte[] data, ref ulong position, out short output)

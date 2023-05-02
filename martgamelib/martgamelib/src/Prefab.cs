@@ -1,4 +1,4 @@
-﻿using martlib.src;
+﻿using martlib;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -44,7 +44,7 @@ namespace martgamelib
         {
             if (!filename.ToLower().EndsWith(".pfab")) return -1;
 
-            Prefab[]? tempPrefabArray = JsonSerializer.Deserialize<Prefab[]>(filename);
+            Prefab[]? tempPrefabArray = MonSerializer.Deserialize<Prefab[]>(filename);
 
             if (tempPrefabArray == null) return -1;
 
@@ -77,9 +77,9 @@ namespace martgamelib
         public class ComponentFab
         {
             public string ComponentType;
-            public string ComponentJSON;
+            public byte[] ComponentMON;
 
-            [JsonIgnore]
+            [MonSerializer.MonIgnore]
             internal Type ctype;
         }
     }

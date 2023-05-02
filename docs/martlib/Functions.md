@@ -10,9 +10,12 @@ By hmc-rae.
 ## Versions
  - 1.0
 	- First release
+		- 1.0.1
+			- Added Byte & SByte read capability
 
 ## Usage
 
+### File seek
 ```csharp
 void Functions.Seek(string directory, Func<string, int> action)
 ```
@@ -20,10 +23,13 @@ Recursively checks all files in a given directory, considering all subfolders. F
 
 The file name is passed to the function `action` as the only parameter, and anticipates a return value of int. Currently, return value is not used.
 
+### Array manipulation
 ```csharp
 T[] Functions.BitReaders.Double<T>(T[] list)
 ```
 Given an array of type T, doubles the size of the array and reinserts all values.
+
+### Data writing
 
 ```csharp
 byte[] Functions.BitReaders.Write(byte[] output, object? value, ref ulong position)
@@ -46,6 +52,7 @@ While there is the default function that accepts `object?` as the value, overloa
 
 The resultant byte array is returned (in event of the array doubling in size). The parameter `position` is updated to point to the 'end' of the byte array after writing the value.
 
+### Data reading
 ```csharp
 void Functions.BitReaders.Read(byte[] data, ref ulong position, out ? output)
 ```
@@ -59,6 +66,8 @@ The following types are supported:
  - uint
  - short
  - ushort
+ - byte
+ - sbyte
  - float
  - double
  - bool		(0 or 255)
@@ -76,7 +85,9 @@ The following types are supported:
  - int
  - uint
  - short
- - ushort
+ - ushort 
+ - byte
+ - sbyte
  - float
  - double
  - bool		(0 or 255)

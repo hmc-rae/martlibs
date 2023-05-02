@@ -1,7 +1,9 @@
 ﻿using SFML.Graphics;
 using SFML.System;
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using martlib;
 
 namespace martgamelib
 {
@@ -43,35 +45,34 @@ namespace martgamelib
         public int ID;
         public int AnimationCount;
 
-        [JsonInclude]
+        [MonSerializer.MonInclude]
         internal AnimationEntry[] Animations;
 
-        [JsonIgnore]
+        [MonSerializer.MonIgnore]
         internal bool built = false;
 
-        internal class AnimationEntry
+        public class AnimationEntry
         {
             public int ID;
             public int FrameCount;
-            [JsonInclude]
+
+            [MonSerializer.MonInclude]
             internal SpriteFrame[] Frames;
 
             internal class SpriteFrame
             {
-                [JsonInclude]
+                [MonSerializer.MonInclude]
                 public int ID;
                 public int X, Y;
                 public int W, H;
 
-                [JsonIgnore]
-                public Sprite sprite;
-                [JsonIgnore]
+                [MonSerializer.MonIgnore]
+                public Sprite sprite; 
+                [MonSerializer.MonIgnore]
                 public Texture parentTexture;
-                [JsonIgnore]
+                [MonSerializer.MonIgnore]
                 public IntRect cullingRect;
-
                 
-
                 public void Build(TextureDirectory directory)
                 {
                     parentTexture = directory.GetTexture(ID);
@@ -126,9 +127,9 @@ namespace martgamelib
         public TextureEntry[] textures;
         public class TextureEntry
         {
-            [JsonIgnore]
+            [MonSerializer.MonIgnore]
             public Texture texture; 
-            [JsonIgnore]
+            [MonSerializer.MonIgnore]
             public bool loaded;
             public string address;
             public TextureEntry(string line)

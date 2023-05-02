@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Reflection;
-using martlib.src;
+using martlib;
 
 
 namespace martgamelib

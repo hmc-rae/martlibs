@@ -13,7 +13,7 @@ namespace martlib
         /// <summary>
         /// Version of MonSerializer being used. Some versions of MonSerializer may format differently and therefore be incompatible.
         /// </summary>
-        public const string VERSION = "0.2";
+        public const string VERSION = "0.3";
         /// <summary>
         /// The default amount of bytes allocated to each object when converting to Mon (1kb). The buffer will automatically double whenever the limit is reached.
         /// </summary>
@@ -32,7 +32,6 @@ namespace martlib
 
             ulong objid = 0;
 
-            //Console.WriteLine(obj.GetType().GetFields().Length); //4 here
             process(obj, objs, ref objid);
 
             ulong bytecount = 0;
@@ -86,14 +85,50 @@ namespace martlib
         /// <returns></returns>
         public static T Deserialize<T>(byte[] data)
         {
-            T obj = Activator.CreateInstance<T>();
-
             List<objectEntry> objects = new List<objectEntry>();
             ulong pos = 0;
 
-            objectEntry result = dprocess(obj, obj.GetType(), objects, data, pos);
+            bool isclass, isstruct, isarray, isprimitive, isstring, include;
+            gettypes(typeof(T), out isclass, out isstruct, out isarray, out isprimitive, out isstring, out include);
 
+            objectEntry result = null;
+
+            if (isarray)
+            {
+                result = dprocessarr(typeof(T).GetElementType(), objects, data, pos);
+            }
+            else
+            {
+                T obj = Activator.CreateInstance<T>();
+                result = dprocess(obj, obj.GetType(), objects, data, pos);
+            }
             return (T)result.obj;
+        }
+        /// <summary>
+        /// Reads a file into a byte array, and deserializes said array from MON into the given type.
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        /// <exception cref="FileNotFoundException"></exception>
+        public static object? Deserialize(string filename, Type type)
+        {
+            if (!File.Exists(filename)) throw new FileNotFoundException(filename);
+            byte[] data = File.ReadAllBytes(filename);
+            return Deserialize(data, type);
+        }
+        /// <summary>
+        /// Reads a file into a byte array, and deserializes said array from MON into the given type.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="filename"></param>
+        /// <returns></returns>
+        /// <exception cref="FileNotFoundException"></exception>
+        public static T Deserialize<T>(string filename)
+        {
+            if (!File.Exists(filename)) throw new FileNotFoundException(filename);
+            byte[] data = File.ReadAllBytes(filename);
+            return Deserialize<T>(data);
         }
 
 
@@ -129,8 +164,8 @@ namespace martlib
                     dynamic val = arr.GetValue(i);
                     Type typ = arr.GetValue(i).GetType();
 
-                    bool isclass, isstruct, isarray, isprimitive, isstring, include, ignore;
-                    gettypes(typ, out isclass, out isstruct, out isarray, out isprimitive, out isstring, out ignore, out include);
+                    bool isclass, isstruct, isarray, isprimitive, isstring, include;
+                    gettypes(typ, out isclass, out isstruct, out isarray, out isprimitive, out isstring, out include);
 
                     processfield(obj, val, obje, objects, ref objid, isclass, isstruct, isarray, isprimitive, isstring);
                 }
@@ -143,16 +178,16 @@ namespace martlib
             }
 
             //process as class/struct
-            FieldInfo[] fields = obj.GetType().GetFields();
+            FieldInfo[] fields = obj.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             for (int i = 0; i < fields.Length; i++)
             {
                 FieldInfo field = fields[i];
-                bool isclass, isstruct, isarray, isprimitive, isstring, include, ignore;
-                gettypes(field, out isclass, out isstruct, out isarray, out isprimitive, out isstring, out ignore, out include);
+                bool isclass, isstruct, isarray, isprimitive, isstring, include;
+                gettypes(field, out isclass, out isstruct, out isarray, out isprimitive, out isstring, out include);
 
-                if (ignore && !include)
+                if (!include)
                 {
-                    return;
+                    continue;
                 }
 
                 obje.data = Functions.BitReaders.Write(obje.data, field.Name, ref obje.position);
@@ -223,14 +258,14 @@ namespace martlib
                 string field;
                 Functions.BitReaders.Read(data, ref pos, out field);
 
-                FieldInfo? fieldInfo = type.GetField(field);
+                FieldInfo? fieldInfo = type.GetField(field, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                 if (fieldInfo == null)
                 {
                     throw new FieldAccessException($"Invalid field {field} in type {type}\t\t@0x{pos.ToString("X")} ({pos}) in byte stream.");
                 }
 
-                bool isclass, isstruct, isarray, isprimitive, isstring, include, ignore;
-                gettypes(fieldInfo, out isclass, out isstruct, out isarray, out isprimitive, out isstring, out ignore, out include);
+                bool isclass, isstruct, isarray, isprimitive, isstring, include;
+                gettypes(fieldInfo, out isclass, out isstruct, out isarray, out isprimitive, out isstring, out include);
 
                 if (isprimitive)
                 {
@@ -335,8 +370,8 @@ namespace martlib
             objects.Add(obje);
             obje.identifier = pos;
 
-            bool isclass, isstruct, isarray, isprimitive, isstring, include, ignore;
-            gettypes(childtype, out isclass, out isstruct, out isarray, out isprimitive, out isstring, out ignore, out include);
+            bool isclass, isstruct, isarray, isprimitive, isstring, include;
+            gettypes(childtype, out isclass, out isstruct, out isarray, out isprimitive, out isstring, out include);
 
             for (int idx = 0; idx < length; idx++)
             {
@@ -425,25 +460,24 @@ namespace martlib
             return obje;
         }
 
-        private static void gettypes(FieldInfo field, out bool isclass, out bool isstruct, out bool isarray, out bool isprimitive, out bool isstring, out bool ignore, out bool include)
+        private static void gettypes(FieldInfo field, out bool isclass, out bool isstruct, out bool isarray, out bool isprimitive, out bool isstring, out bool include)
         {
             isclass = field.FieldType.IsClass;
             isstruct = field.FieldType.IsValueType && !field.FieldType.IsEnum && !field.FieldType.IsPrimitive;
             isarray = field.FieldType.IsArray;
             isprimitive = field.FieldType.IsPrimitive;
             isstring = field.FieldType == typeof(string);
-            ignore = false;
-            include = false;
+
+            include = field.IsPublic;
 
             foreach (CustomAttributeData data in field.CustomAttributes)
             {
-                if (data.AttributeType == typeof(MonIgnore)) ignore = true;
+                if (data.AttributeType == typeof(MonIgnore)) include = false;
                 if (data.AttributeType == typeof(MonInclude)) include = true;
             }
         }
-        private static void gettypes(Type field, out bool isclass, out bool isstruct, out bool isarray, out bool isprimitive, out bool isstring, out bool ignore, out bool include)
+        private static void gettypes(Type field, out bool isclass, out bool isstruct, out bool isarray, out bool isprimitive, out bool isstring, out bool include)
         {
-            ignore = false;
             include = true;
             isclass = field.IsClass;
             isstruct = field.IsValueType && !field.IsEnum && !field.IsPrimitive;
