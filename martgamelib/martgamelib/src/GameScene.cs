@@ -12,7 +12,7 @@ namespace martgamelib
         private InputManager input;
         private Pool<GameObject> objectPool, tempPool;
         private DistributorPool distributorPool;
-        private Runtimer timeA, timeB;
+        private Runtimer fTime, tTime;
 
         internal bool ChangeScene = false;
         internal GameScene? nextScene;
@@ -29,15 +29,15 @@ namespace martgamelib
         public martgame Game => martgame;
         public GameWindow GameWindow => window;
         public InputManager Input => input;
-        public Runtimer FrameTime => timeA;
-        public Runtimer TickTime => timeB;
+        public Runtimer FrameTime => fTime;
+        public Runtimer TickTime => tTime;
 
         public GameScene(uint poolSize, uint workerCount, martgame game)
         {
             window = game.Window;
             input = game.Input;
-            timeA = game.FrameTime;
-            timeB = game.TickTime;
+            fTime = game.FrameTime;
+            tTime = game.TickTime;
             martgame = game;
 
             objectPool = new Pool<GameObject>(poolSize);
@@ -93,6 +93,15 @@ namespace martgamelib
             tempPool.PurgeUnused();
         }
 
+        internal void Render()
+        {
+            for (int i = 0; i < objectPool.OccupiedSize; i++)
+            {
+                objectPool.Get(i).render();
+            }
+        }
+
+
         private uint scid;
         public GameObject Instantiate()
         {
@@ -119,6 +128,40 @@ namespace martgamelib
             GameObject obj = new GameObject(this, origin);
             obj.objid = scid++;
             tempPool.Add(obj);
+
+            return obj;
+        }
+        public GameObject Instantiate(Prefab prefab)
+        {
+            if (objectPool.OccupiedSize >= objectPool.MaxSize)
+            {
+                //TODO: THROW CONSOLE ERROR
+                return null;
+            }
+
+            GameObject obj = new GameObject(this);
+            obj.objid = scid++;
+            tempPool.Add(obj);
+
+            prefab.Attach(obj);
+
+            return obj;
+        }
+        public GameObject Instantiate(Prefab prefab, Transform origin)
+        {
+            if (objectPool.OccupiedSize >= objectPool.MaxSize)
+            {
+                //TODO: THROW CONSOLE ERROR
+                return null;
+            }
+
+            GameObject obj = new GameObject(this);
+            obj.objid = scid++;
+            tempPool.Add(obj);
+
+            prefab.Attach(obj);
+
+            obj.transformComponent = origin;
 
             return obj;
         }
@@ -152,6 +195,42 @@ namespace martgamelib
             objectPool.Add(obj);
 
             obj.freshMade = false;
+
+            return obj;
+        }
+        public GameObject InstantiateUrgent(Prefab prefab)
+        {
+            if (objectPool.OccupiedSize >= objectPool.MaxSize)
+            {
+                //TODO: THROW CONSOLE ERROR
+                return null;
+            }
+
+            GameObject obj = new GameObject(this);
+            obj.objid = scid++;
+            objectPool.Add(obj);
+
+            obj.freshMade = false;
+
+            prefab.Attach(obj);
+
+            return obj;
+        }
+        public GameObject InstantiateUrgent(Prefab prefab, Transform origin)
+        {
+            if (objectPool.OccupiedSize >= objectPool.MaxSize)
+            {
+                //TODO: THROW CONSOLE ERROR
+                return null;
+            }
+
+            GameObject obj = new GameObject(this, origin);
+            obj.objid = scid++;
+            objectPool.Add(obj);
+
+            obj.freshMade = false;
+
+            prefab.Attach(obj);
 
             return obj;
         }

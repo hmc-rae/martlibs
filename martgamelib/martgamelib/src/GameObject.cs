@@ -146,7 +146,6 @@ namespace martgamelib
 
             return obj as BehaviorComponent;
         }
-
         /// <summary>
         /// Adds a new behavior component to this gameobject, providing it default values as specified by the json string
         /// </summary>

@@ -60,13 +60,14 @@ namespace martgamelib
     public class Prefab
     {
         public string PrefabName;
+        [MonSerializer.MonInclude]
+        internal FlagStruct flags;
+        [MonSerializer.MonInclude]
+        internal Transform transform;
+        [MonSerializer.MonInclude]
+        internal ComponentFab[] components;
 
-        //Prefab data
-        public FlagStruct flags;
-
-        public ComponentFab[] components;
-
-        public void Construct()
+        internal void Construct()
         {
             for (int i = 0; i < components.Length; i++)
             {
@@ -74,18 +75,36 @@ namespace martgamelib
             }
         }
 
-        public class ComponentFab
+        internal class ComponentFab
         {
             public string ComponentType;
             public byte[] ComponentMON;
 
             [MonSerializer.MonIgnore]
             internal Type ctype;
+
+            internal BehaviorComponent? getComponent()
+            {
+                return MonSerializer.Deserialize(ComponentMON, ctype) as BehaviorComponent;
+            }
+        }
+
+        internal void Attach(GameObject obj)
+        {
+            obj.Flags = flags;
+            obj.transformComponent = transform;
+            for (int i = 0; i < components.Length; i++)
+            {
+                BehaviorComponent comp = components[i].getComponent();
+                if (comp == null)
+                    continue;
+                obj.AddBehavior(comp);
+            }
         }
     }
     public static class SceneLoader
     {
-        public static void LoadNewScene(GameScene currentScene)
+        public static void LoadNewScene(GameScene currentScene, string scenePath)
         {
 
         }

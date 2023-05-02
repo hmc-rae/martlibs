@@ -9,7 +9,8 @@ namespace martgamelib
 {
     public class CameraComponent : BehaviorComponent
     {
+        public Vector RenderRadius;
+
         internal RenderTarget target;
-        public Vector RenderRadius; 
     }
 }

@@ -21,14 +21,15 @@ namespace martgamelib
         private GameScene scene;
         private InputManager input;
         private GameWindow window;
-        private Runtimer timerA, timerB;
+        private Runtimer fTime, tTime;
         private TickRunner tickRunner;
         private PrefabLibrary library;
+        private bool DecoupleRender = false;
 
         public GameScene CurrentScene => scene;
         public InputManager Input => input;
-        public Runtimer FrameTime => timerA;    //Timer that controls rendering
-        public Runtimer TickTime => timerB;     //Timer that controls background ticks
+        public Runtimer FrameTime => fTime;    //Timer that controls rendering
+        public Runtimer TickTime => tTime;     //Timer that controls background ticks
         public GameWindow Window => window;
         public PrefabLibrary PrefabLib => library;
 
@@ -47,7 +48,7 @@ namespace martgamelib
 
         private void generate(WindowDetails w, LogisticDetails l, PathingDetails d)
         {
-            SpriteHandler.Initialize(d.directoryPath, d.entityPath);
+            SpriteHandler.Initialize(d.texPath, d.entPath);
 
             //Initialize component reader to default directory
             //It'll be Assets\\Scripts, read all .dll in there for valid
@@ -56,10 +57,27 @@ namespace martgamelib
             //Initialize prefab reader
             PrefabLib.LoadPrefabs(d.prefabPath);
 
+            DecoupleRender = l.DecoupledRender;
+            //If true, then create a tick runner and run it separately.
+            //If false, then set both timers to be the same, and run on framerate exclusively.
+            //Still utilizes a distributor for objects
+
             input = new InputManager();
             window = new GameWindow(w.Width, w.Height, w.Title, input, w.Fullscreen ? GameWindow.FULLSCREEN_STYLE : GameWindow.DEFAULT_STYLE);
-            timerA = new Runtimer(1000 / l.FrameRate);
-            timerB = new Runtimer(1000 / l.TickRate);
+
+
+            fTime = new Runtimer(1000 / l.FrameRate);
+
+            if (DecoupleRender)
+            {
+                //If the game logic runs on a separate thread, give the logic thread its own timer
+                tTime = new Runtimer(1000 / l.TickRate);
+            }
+            else
+            {
+                //Else, match the two timers to the same reference
+                tTime = fTime;
+            }
 
             scene = new GameScene(l.ObjectPoolSize, l.WorkerThreadCount, this);
 
@@ -73,13 +91,33 @@ namespace martgamelib
         /// </summary>
         public void Run()
         {
-            timerA.Start();
-            tickRunner.Start();
+            fTime.Start();
+
+            if (DecoupleRender)
+                tickRunner.Start();
+
             while (window.IsOpen)
             {
                 window.StartFrame();
 
+                //If not decoupled, do all the game logic here.
+                if (!DecoupleRender)
+                {
+                    scene.StartFrame();
+
+                    scene.Synchronize();
+
+                    scene.EndFrame();
+
+                    if (scene.ChangeScene)
+                    {
+                        tickRunner.scene = scene.nextScene;
+                        ChangedScene = true;
+                    }
+                }
+
                 //Go through each item and run it's render logic
+                scene.Render();
 
                 window.EndFrame();
 
@@ -91,7 +129,7 @@ namespace martgamelib
                     window.ChangeScene(scene);
                 }
 
-                timerA.Wait();
+                fTime.Wait();
             }
             tickRunner.ContinueRunning = false;
         }
@@ -118,24 +156,26 @@ namespace martgamelib
             public long FrameRate;
             public long TickRate;
             public string DefaultScene;
+            public bool DecoupledRender;
 
             public LogisticDetails()
             {
                 ObjectPoolSize = 2048;
                 WorkerThreadCount = 4;
                 FrameRate = 60;
-                TickRate = 60;
+                TickRate = 20;
                 DefaultScene = "";
+                DecoupledRender = true;
             }
         }
         public struct PathingDetails
         {
-            public string directoryPath, entityPath, libsPath, prefabPath;
+            public string texPath, entPath, libsPath, prefabPath;
             public PathingDetails()
             {
                 //The two files for reading where animations are located.
-                directoryPath = $"{Directory.GetCurrentDirectory()}\\Assets\\YellowPages\\TextureDirectory.path";
-                entityPath = $"{Directory.GetCurrentDirectory()}\\Assets\\YellowPages\\EntityAnimations.path";
+                texPath = $"{Directory.GetCurrentDirectory()}\\Assets\\YellowPages\\TextureDirectory.bin";
+                entPath = $"{Directory.GetCurrentDirectory()}\\Assets\\YellowPages\\EntityAnimations.bin";
 
                 //Library pointing to all the user-defined code
                 libsPath = $"{Directory.GetCurrentDirectory()}\\Assets\\Scripts";

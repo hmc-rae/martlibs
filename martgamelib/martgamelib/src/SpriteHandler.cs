@@ -9,17 +9,16 @@ namespace martgamelib
 {
     public static class SpriteHandler
     {
-        internal static EntityEntry[] entEntry;
-
-        internal static TextureDirectory textureDirectory;
-        public static void Initialize(string directoryPath, string entityEntryPath)
+        internal static EntityRegister entRegister;
+        internal static TextureRegister texRegister;
+        public static void Initialize(string texPath, string entPath)
         {
-            textureDirectory = JsonSerializer.Deserialize<TextureDirectory>(directoryPath);
-            entEntry = JsonSerializer.Deserialize<EntityEntry[]>(entityEntryPath);
-
-            if (textureDirectory == null) throw new ArgumentException($"Path {directoryPath} is invalid for textureDirectory.");
-            if (entEntry == null) throw new ArgumentException($"Path {entityEntryPath} is invalid for entEntry");
+            texRegister = MonSerializer.Deserialize<TextureRegister>(texPath);
+            texRegister.Build();
+            entRegister = MonSerializer.Deserialize<EntityRegister>(entPath);
+            entRegister.Build();
         }
+
         /// <summary>
         /// Returns the EntityEntry for the respective entity - a package representing all animations of the entity.<br></br>
         /// A single entity can have multiple states, with each state having multiple frames of animation.
@@ -28,67 +27,139 @@ namespace martgamelib
         /// <returns></returns>
         public static EntityEntry? GetEntityAnimations(int EntityID)
         {
-            for (int i = 0; i < entEntry.Length; i++)
-            {
-                if (entEntry[i].ID == EntityID)
-                {
-                    if (!entEntry[i].built)
-                        entEntry[i].Build(textureDirectory);
-                    return entEntry[i];
-                }
-            }
-            return null;
+            return entRegister.getentry(EntityID);
         }
     }
+    public class EntityRegister
+    {
+        [MonSerializer.MonInclude]
+        private int entC; 
+
+        [MonSerializer.MonInclude]
+        private EntityEntry[] entries;
+
+        [MonSerializer.MonIgnore]
+        public int EntityCount
+        {
+            get
+            {
+                return entC;
+            }
+        }
+
+        [MonSerializer.MonIgnore]
+        private Dictionary<int, EntityEntry> map;
+
+        public EntityRegister()
+        {
+            entries = new EntityEntry[0];
+            entC = 0;
+            map = new Dictionary<int, EntityEntry>();
+        }
+        internal void Build()
+        {
+            map = new Dictionary<int, EntityEntry>(entC);
+            for (int i = 0; i < entC; i++)
+            {
+                map.Add(entries[i].ID, entries[i]);
+            }
+        }
+
+        internal EntityEntry? getentry(int id)
+        {
+            if (!map.ContainsKey(id)) return null;
+            return map[id];
+        }
+
+        
+    }
+    internal class TextureRegister
+    {
+        [MonSerializer.MonInclude]
+        internal int texC;
+        [MonSerializer.MonInclude]
+        internal TextureEntry[] textures;
+        [MonSerializer.MonInclude]
+        internal string basePath;
+
+        [MonSerializer.MonIgnore]
+        internal Dictionary<int, TextureEntry> map;
+
+        internal TextureRegister()
+        {
+            texC = 0;
+            basePath = "";
+            map = new Dictionary<int, TextureEntry>();
+            textures = new TextureEntry[0];
+        }
+        internal Texture? GetTexture(int id)
+        {
+            if (!map.ContainsKey(id)) return null;
+
+            return map[id].getTexture(basePath);
+        }
+
+        internal void Build()
+        {
+            map = new Dictionary<int, TextureEntry>(texC);
+            for (int i = 0; i < texC; i++)
+            {
+                map.Add(textures[i].id, textures[i]);
+            }
+        }
+        internal class TextureEntry
+        {
+            [MonSerializer.MonIgnore]
+            private Texture texture;
+
+            [MonSerializer.MonIgnore]
+            public bool loaded = false;
+
+            public int id;
+            public string address;
+
+            public TextureEntry()
+            {
+                id = -1;
+                address = "";
+                loaded = false;
+            }
+            public Texture getTexture(string basepath)
+            {
+                if (id == -1) return null;
+                if (!loaded)
+                {
+                    texture = new Texture($"{basepath}\\{address}");
+                    loaded = true;
+                }
+                return texture;
+            }
+        }
+    }
+
     public class EntityEntry
     {
-        public int ID;
-        public int AnimationCount;
+        public int ID => id;
+        public int AnimationCount => animC;
 
         [MonSerializer.MonInclude]
         internal AnimationEntry[] Animations;
+        [MonSerializer.MonInclude]
+        internal int id;
+        [MonSerializer.MonInclude]
+        internal int animC;
 
         [MonSerializer.MonIgnore]
         internal bool built = false;
 
-        public class AnimationEntry
+        public EntityEntry()
         {
-            public int ID;
-            public int FrameCount;
-
-            [MonSerializer.MonInclude]
-            internal SpriteFrame[] Frames;
-
-            internal class SpriteFrame
-            {
-                [MonSerializer.MonInclude]
-                public int ID;
-                public int X, Y;
-                public int W, H;
-
-                [MonSerializer.MonIgnore]
-                public Sprite sprite; 
-                [MonSerializer.MonIgnore]
-                public Texture parentTexture;
-                [MonSerializer.MonIgnore]
-                public IntRect cullingRect;
-                
-                public void Build(TextureDirectory directory)
-                {
-                    parentTexture = directory.GetTexture(ID);
-                    cullingRect = new IntRect(new Vector2i(X, Y), new Vector2i(W, H));
-                    sprite = new Sprite(parentTexture, cullingRect);
-                }
-            }
-
-            internal void Build(TextureDirectory dir)
-            {
-                for (int i = 0; i < Frames.Length; i++)
-                {
-                    Frames[i].Build(dir);
-                }
-            }
+            Animations = new AnimationEntry[0];
+            id = 0;
+            animC = 0;
+            built = false;
         }
+
         public bool ValidAnimationFrame(int anim, int frame)
         {
             if (anim < AnimationCount && anim > 0)
@@ -98,7 +169,7 @@ namespace martgamelib
             }
             return false;
         }
-        public Sprite GetFrame(int anim, int frame)
+        public Sprite? GetFrame(int anim, int frame)
         {
             if (ValidAnimationFrame(anim, frame))
                 return Animations[anim].Frames[frame].sprite;
@@ -113,59 +184,69 @@ namespace martgamelib
             return 0;
         }
 
-        internal void Build(TextureDirectory dir)
+        internal void Build(TextureRegister texReg)
         {
+            if (built) return;
             for (int i = 0; i < Animations.Length; i++)
             {
-                Animations[i].Build(dir);
+                Animations[i].Build(texReg);
             }
+            built = true;
         }
-    }
-    public class TextureDirectory
-    {
-        public int textureCount;
-        public TextureEntry[] textures;
-        public class TextureEntry
+
+        //Animation entry class
+        internal class AnimationEntry
         {
-            [MonSerializer.MonIgnore]
-            public Texture texture; 
-            [MonSerializer.MonIgnore]
-            public bool loaded;
-            public string address;
-            public TextureEntry(string line)
+            public int ID;
+            public int FrameCount;
+
+            [MonSerializer.MonInclude]
+            internal SpriteFrame[] Frames;
+
+            internal AnimationEntry()
             {
-                address = line;
-                loaded = false;
+                ID = 0;
+                FrameCount = 0;
+                Frames = new SpriteFrame[0];
             }
-            public Texture getTexture()
+
+            internal void Build(TextureRegister texReg)
             {
-                if (!loaded)
+                for (int i = 0; i < Frames.Length; i++)
                 {
-                    texture = new Texture(address);
-                    loaded = true;
+                    Frames[i].Build(texReg);
                 }
-                return texture;
             }
-        }
-        public TextureDirectory(string filename)
-        {
-            if (!File.Exists(filename)) return;
 
-            string[] lines = File.ReadAllLines(filename);
-            textures = new TextureEntry[lines.Length];
-            textureCount = lines.Length;
-
-            for (int i = 0; i < textures.Length; i++)
+            internal class SpriteFrame
             {
-                textures[i] = new TextureEntry(lines[i]);
+                public int ID;
+                public int X, Y;
+                public int W, H;
+
+                [MonSerializer.MonIgnore]
+                public Sprite sprite;
+                [MonSerializer.MonIgnore]
+                public Texture parentTexture;
+                [MonSerializer.MonIgnore]
+                public IntRect cullingRect;
+
+                private static Sprite defsprite = new Sprite();
+                private static Texture deftex = new Texture(1, 1);
+
+                internal SpriteFrame()
+                {
+                    parentTexture = deftex;
+                    sprite = defsprite;
+                }
+
+                internal void Build(TextureRegister texReg)
+                {
+                    parentTexture = texReg.GetTexture(ID);
+                    cullingRect = new IntRect(new Vector2i(X, Y), new Vector2i(W, H));
+                    sprite = new Sprite(parentTexture, cullingRect);
+                }
             }
-        }
-
-        public Texture GetTexture(int id)
-        {
-            if (id >= textureCount) return null;
-
-            return textures[id].getTexture();
         }
     }
 }

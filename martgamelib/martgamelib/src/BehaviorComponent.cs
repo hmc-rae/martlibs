@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Net.NetworkInformation;
 using System.Numerics;
 using System.Text.Json.Serialization;
-using martgamelib.src;
+using martgamelib;
 using martlib;
 
 namespace martgamelib
@@ -31,9 +32,9 @@ namespace martgamelib
         public virtual void OnDestroy() { }
         public virtual void OnTick() { }
         public virtual void OnFrame() { }
-        
+
         /// <summary>
-        /// Returns an empty GameObject ready to have a list applied. It will be added to the scene at the end of frame.
+        /// Returns an empty GameObject ready to have components attached. It will be added to the scene at the end of the current tick.
         /// </summary>
         /// <param name="origin"></param>
         /// <returns></returns>
@@ -42,7 +43,7 @@ namespace martgamelib
             return Scene.Instantiate();
         }
         /// <summary>
-        /// Returns an empty GameObject ready to have a list applied. It will be added to the scene at the end of frame.
+        /// Returns an empty GameObject ready to have components attached. It will be added to the scene at the end of the current tick.
         /// </summary>
         /// <param name="origin"></param>
         /// <returns></returns>
@@ -50,13 +51,27 @@ namespace martgamelib
         {
             return Scene.Instantiate(origin);
         }
+        /// <summary>
+        /// Returns a GameObject with a prefab applied. It will be added to the scene at the end of the current tick.
+        /// </summary>
+        /// <param name="prefab"></param>
+        /// <returns></returns>
         public GameObject Instantiate(Prefab prefab)
         {
-            return new GameObject(Scene);
+            return Scene.Instantiate(prefab);
+        }
+        /// <summary>
+        /// Returns a GameObject with a prefab applied. It will be added to the scene at the end of the current tick.
+        /// </summary>
+        /// <param name="prefab"></param>
+        /// <returns></returns>
+        public GameObject Instantiate(Prefab prefab, Transform origin)
+        {
+            return Scene.Instantiate(prefab, origin);
         }
 
         /// <summary>
-        /// Returns an empty GameObject ready to have a list applied. It'll be added instantly to the scene.
+        /// Returns an empty GameObject ready to have components attached. It'll be added instantly to the scene.
         /// </summary>
         /// <param name="origin"></param>
         /// <returns></returns>
@@ -65,13 +80,31 @@ namespace martgamelib
             return Scene.InstantiateUrgent();
         }
         /// <summary>
-        /// Returns an empty GameObject ready to have a list applied. It'll be added instantly to the scene.
+        /// Returns an empty GameObject ready to have components attached. It'll be added instantly to the scene.
         /// </summary>
         /// <param name="origin"></param>
         /// <returns></returns>
         public GameObject InstantiateUrgent(Transform origin)
         {
             return Scene.InstantiateUrgent(origin);
+        }
+        /// <summary>
+        /// Returns a GameObject with a prefab applied. It'll be added instantly to the scene.
+        /// </summary>
+        /// <param name="origin"></param>
+        /// <returns></returns>
+        public GameObject InstantiateUrgent(Prefab prefab)
+        {
+            return Scene.InstantiateUrgent(prefab);
+        }
+        /// <summary>
+        /// Returns a GameObject with a prefab applied. It'll be added instantly to the scene.
+        /// </summary>
+        /// <param name="origin"></param>
+        /// <returns></returns>
+        public GameObject InstantiateUrgent(Prefab prefab, Transform origin)
+        {
+            return Scene.InstantiateUrgent(prefab, origin);
         }
     }
 }
