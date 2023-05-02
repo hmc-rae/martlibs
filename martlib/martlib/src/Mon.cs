@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Xml.Linq;
 
 
 namespace martlib
@@ -9,6 +10,10 @@ namespace martlib
     /// </summary>
     public static class MonSerializer
     {
+        /// <summary>
+        /// Version of MonSerializer being used. Some versions of MonSerializer may format differently and therefore be incompatible.
+        /// </summary>
+        public const string VERSION = "0.2";
         /// <summary>
         /// The default amount of bytes allocated to each object when converting to Mon (1kb). The buffer will automatically double whenever the limit is reached.
         /// </summary>
@@ -113,59 +118,88 @@ namespace martlib
         }
         private static void processmain<T>(T obj, objectEntry obje, List<objectEntry> objects, ref ulong objid)
         {
+            if (obj as Array != null)
+            {
+                //process as array
+                Array? arr = obj as Array;
+                obje.data = Functions.BitReaders.Write(obje.data, arr.Length, ref obje.position);
+
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    dynamic val = arr.GetValue(i);
+                    Type typ = arr.GetValue(i).GetType();
+
+                    bool isclass, isstruct, isarray, isprimitive, isstring, include, ignore;
+                    gettypes(typ, out isclass, out isstruct, out isarray, out isprimitive, out isstring, out ignore, out include);
+
+                    processfield(obj, val, obje, objects, ref objid, isclass, isstruct, isarray, isprimitive, isstring);
+                }
+                return;
+            }
+            else if (obj.GetType().GetInterface(nameof(ICollection<T>)) != null)
+            {
+                //process as generic
+                return;
+            }
+
+            //process as class/struct
             FieldInfo[] fields = obj.GetType().GetFields();
             for (int i = 0; i < fields.Length; i++)
             {
                 FieldInfo field = fields[i];
-
-                dynamic val = field.GetValue(obj);
                 bool isclass, isstruct, isarray, isprimitive, isstring, include, ignore;
                 gettypes(field, out isclass, out isstruct, out isarray, out isprimitive, out isstring, out ignore, out include);
 
                 if (ignore && !include)
                 {
-                    continue;
+                    return;
                 }
 
                 obje.data = Functions.BitReaders.Write(obje.data, field.Name, ref obje.position);
-                if ((isprimitive && !(isclass || isstruct || isarray)) || field.FieldType == typeof(string))
-                {
-                    obje.data = Functions.BitReaders.Write(obje.data, val, ref obje.position);
-                }
-                else if (isstruct)
-                {
-                    processmain(val, obje, objects, ref objid);
-                    obje.data = Functions.BitReaders.Write(obje.data, false, ref obje.position);
-                }
-                else if (isclass)
-                {
-                    //Check if the object is already processed - add reference to its ID and flag it to be updated later.
-                    objectEntry? target = null;
-                    for (int k = 0; k < objects.Count; k++)
-                    {
-                        if (objects[k].obj == val)
-                        {
-                            target = objects[k];
-                            break;
-                        }
-                    }
+                dynamic val = field.GetValue(obj);
 
-                    if (target == null)
-                    {
-                        //create new objectentry
-                        target = process(val, objects, ref objid);
-                    }
-
-                    //refernce its id to complete later
-                    if (obje.linkpointid >= obje.linkpoints.Length)
-                        obje.linkpoints = Functions.BitReaders.Double(obje.linkpoints);
-                    obje.linkpoints[obje.linkpointid++] = obje.position;
-                    obje.data = Functions.BitReaders.Write(obje.data, target.identifier, ref obje.position);
-                }
-                else if (isarray)
+                processfield(obj, val, obje, objects, ref objid, isclass, isstruct, isarray, isprimitive, isstring);
+            }
+        }
+        private static void processfield<T>(T obj, dynamic val, objectEntry obje, List<objectEntry> objects, ref ulong objid, bool isclass, bool isstruct, bool isarray, bool isprimitive, bool isstring)
+        {
+            if ((isprimitive && !(isclass || isstruct || isarray)) || isstring)
+            {
+                obje.data = Functions.BitReaders.Write(obje.data, val, ref obje.position);
+            }
+            else if (isstruct)
+            {
+                processmain(val, obje, objects, ref objid);
+                obje.data = Functions.BitReaders.Write(obje.data, false, ref obje.position);
+            }
+            else if (isclass)
+            {
+                //Check if the object is already processed - add reference to its ID and flag it to be updated later.
+                objectEntry? target = null;
+                for (int k = 0; k < objects.Count; k++)
                 {
-                    //todo: arrays
+                    if (objects[k].obj == val)
+                    {
+                        target = objects[k];
+                        break;
+                    }
                 }
+
+                if (target == null)
+                {
+                    //create new objectentry
+                    target = process(val, objects, ref objid);
+                }
+
+                //refernce its id to complete later
+                if (obje.linkpointid >= obje.linkpoints.Length)
+                    obje.linkpoints = Functions.BitReaders.Double(obje.linkpoints);
+                obje.linkpoints[obje.linkpointid++] = obje.position;
+                obje.data = Functions.BitReaders.Write(obje.data, target.identifier, ref obje.position);
+            }
+            else if (isarray)
+            {
+                //todo: arrays
             }
         }
 
@@ -221,6 +255,36 @@ namespace martlib
                     pos = tmp.position;
 
                 }
+                else if (isarray)
+                {
+                    Type eltype = fieldInfo.FieldType.GetElementType();
+
+                    ulong id;
+                    Functions.BitReaders.Read(data, ref pos, out id);
+
+                    dynamic val = new dynamic[0]; 
+
+                    //look to see if the object has already been created
+                    bool found = false;
+                    for (int i = 0; i < objects.Count; i++)
+                    {
+                        if (objects[i].identifier == id)
+                        {
+                            val = objects[i].obj;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        objectEntry tmp = dprocessarr(eltype, objects, data, id);
+                        val = tmp.obj;
+                    }
+
+
+                    fieldInfo.SetValue(obj, val);
+                }
                 else if (isclass)
                 {
                     dynamic val = Activator.CreateInstance(fieldInfo.FieldType);
@@ -256,6 +320,110 @@ namespace martlib
 
             return obje;
         }
+        private static objectEntry dprocessarr(Type childtype, List<objectEntry> objects, byte[] data, ulong pos)
+        {
+            int length;
+            Functions.BitReaders.Read(data, ref pos, out length);
+
+            Array array = Array.CreateInstance(childtype, length);
+
+            objectEntry obje = new objectEntry(array, pos, bufferdefault)
+            {
+                position = pos
+            };
+
+            objects.Add(obje);
+            obje.identifier = pos;
+
+            bool isclass, isstruct, isarray, isprimitive, isstring, include, ignore;
+            gettypes(childtype, out isclass, out isstruct, out isarray, out isprimitive, out isstring, out ignore, out include);
+
+            for (int idx = 0; idx < length; idx++)
+            {
+                if (isprimitive)
+                {
+                    dynamic val = Activator.CreateInstance(childtype);
+                    val = Functions.BitReaders.Read(data, ref pos, val);
+                    array.SetValue(val, idx);
+                }
+                else if (isstring)
+                {
+                    string val = "";
+                    Functions.BitReaders.Read(data, ref pos, out val);
+                    array.SetValue(val, idx);
+                }
+                else if (isstruct)
+                {
+                    dynamic val = Activator.CreateInstance(childtype);
+
+                    //restart the recursive process on the struct
+                    objectEntry tmp = dprocess(val, childtype, objects, data, pos);
+                    val = tmp.obj;
+                    array.SetValue(val, idx);
+                    pos = tmp.position;
+
+                }
+                else if (isarray)
+                {
+                    Type eltype = childtype.GetElementType();
+
+                    ulong id;
+                    Functions.BitReaders.Read(data, ref pos, out id);
+
+                    dynamic val = new object[0];
+
+                    //look to see if the object has already been created
+                    bool found = false;
+                    for (int i = 0; i < objects.Count; i++)
+                    {
+                        if (objects[i].identifier == id)
+                        {
+                            val = objects[i].obj;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        objectEntry tmp = dprocessarr(eltype, objects, data, id);
+                        val = tmp.obj;
+                    }
+
+                    array.SetValue(val, idx);
+                }
+                else if (isclass)
+                {
+                    dynamic val = Activator.CreateInstance(childtype);
+
+                    ulong id;
+                    Functions.BitReaders.Read(data, ref pos, out id);
+
+                    //look to see if the object has already been created
+                    bool found = false;
+                    for (int i = 0; i < objects.Count; i++)
+                    {
+                        if (objects[i].identifier == id)
+                        {
+                            val = objects[i].obj;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    //if not created, create
+                    if (!found)
+                    {
+                        objectEntry tmp = dprocess(val, childtype, objects, data, id);
+                        val = tmp.obj;
+                    }
+
+                    array.SetValue(val, idx);
+                }
+            }
+
+            return obje;
+        }
 
         private static void gettypes(FieldInfo field, out bool isclass, out bool isstruct, out bool isarray, out bool isprimitive, out bool isstring, out bool ignore, out bool include)
         {
@@ -272,6 +440,16 @@ namespace martlib
                 if (data.AttributeType == typeof(MonIgnore)) ignore = true;
                 if (data.AttributeType == typeof(MonInclude)) include = true;
             }
+        }
+        private static void gettypes(Type field, out bool isclass, out bool isstruct, out bool isarray, out bool isprimitive, out bool isstring, out bool ignore, out bool include)
+        {
+            ignore = false;
+            include = true;
+            isclass = field.IsClass;
+            isstruct = field.IsValueType && !field.IsEnum && !field.IsPrimitive;
+            isarray = field.IsArray;
+            isprimitive = field.IsPrimitive;
+            isstring = field == typeof(string);
         }
         private class objectEntry
         {
