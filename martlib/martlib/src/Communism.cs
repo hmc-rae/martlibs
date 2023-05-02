@@ -4,6 +4,7 @@ namespace martlib
 {
     public static class Communism
     {
+        public const string VERSION = "1.0";
         /// <summary>
         /// An object that manages multiple threads operating on one list of objects, distributing work as needed.
         /// </summary>

@@ -9,6 +9,7 @@ namespace martlib
 {
     public static class Functions
     {
+        public const string VERSION = "1.0";
         /// <summary>
         /// Performs an operation on all files in a directory. 
         /// </summary>
