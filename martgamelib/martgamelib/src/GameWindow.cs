@@ -46,7 +46,6 @@ namespace martgamelib
 
         internal void StartFrame()
         {
-            DispatchEvents();
             Clear(clearColor);
         }
         internal void EndFrame()

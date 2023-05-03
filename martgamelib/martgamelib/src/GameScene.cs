@@ -59,6 +59,8 @@ namespace martgamelib
 
         internal void StartFrame()
         {
+            input.prepoll();
+            window.DispatchEvents();
             distributorPool.Start();
         }
 
@@ -233,6 +235,107 @@ namespace martgamelib
             prefab.Attach(obj);
 
             return obj;
+        }
+
+        /// <summary>
+        /// Returns a GameObject that has the given tag. Returns null if none exist.
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <param name="origin"></param>
+        /// <returns></returns>
+        public GameObject? Find(string tag)
+        {
+            for (int i = 0; i < objectPool.OccupiedSize; i++)
+            {
+                if (objectPool.Get(i).Tag == tag)
+                    return objectPool.Get(i);
+            }
+            return null;
+        }
+        /// <summary>
+        /// Returns an array of GameObjects that have the given tag.
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <returns></returns>
+        public GameObject[] FindAll(string tag)
+        {
+            int c = 0;
+            for (int i = 0; i < objectPool.OccupiedSize; i++)
+            {
+                if (objectPool.Get(i).Tag == tag)
+                    c++;
+            }
+
+            GameObject[] lis = new GameObject[c];
+            for (int i = 0, k = 0; i < objectPool.OccupiedSize && k < c; i++)
+            {
+                if (objectPool.Get(i).Tag == tag)
+                    lis[k++] = objectPool.Get(i);
+            }
+            return lis;
+        }
+        
+        /// <summary>
+        /// Returns a GameObject that has the given flag string. Returns null if none exist.
+        /// </summary>
+        /// <param name="flags"></param>
+        /// <param name="exactMatch"></param>
+        /// <returns></returns>
+        public GameObject? Find(FlagStruct flags, bool exactMatch)
+        {
+            for (int i = 0; i < objectPool.OccupiedSize; i++)
+            {
+                if (exactMatch)
+                {
+                    if (objectPool.Get(i).Flags == flags)
+                        return objectPool.Get(i);
+                }
+                else
+                {
+                    if (objectPool.Get(i).Flags.Has(flags))
+                        return objectPool.Get(i);
+                }
+            }
+            return null;
+        }
+        /// <summary>
+        /// Returns an array of GameObjects that have the given flag string.
+        /// </summary>
+        /// <param name="flags"></param>
+        /// <param name="exactMatch"></param>
+        /// <returns></returns>
+        public GameObject[] FindAll(FlagStruct flags, bool exactMatch)
+        {
+            int c = 0;
+            for (int i = 0; i < objectPool.OccupiedSize; i++)
+            {
+                if (exactMatch)
+                {
+                    if (objectPool.Get(i).Flags == flags)
+                        c++;
+                }
+                else
+                {
+                    if (objectPool.Get(i).Flags.Has(flags))
+                        c++;
+                }
+            }
+
+            GameObject[] lis = new GameObject[c];
+            for (int i = 0, k = 0; i < objectPool.OccupiedSize && k < c; i++)
+            {
+                if (exactMatch)
+                {
+                    if (objectPool.Get(i).Flags == flags)
+                        lis[k++] = objectPool.Get(i);
+                }
+                else
+                {
+                    if (objectPool.Get(i).Flags.Has(flags))
+                        lis[k++] = objectPool.Get(i);
+                }
+            }
+            return lis;
         }
     }
 }

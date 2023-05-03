@@ -33,6 +33,45 @@ namespace martgamelib
         public virtual void OnTick() { }
         public virtual void OnFrame() { }
 
+        //detection methods
+        private static Dictionary<Type, List<GameObject>> objectTypeListings = new Dictionary<Type, List<GameObject>>();
+        internal void registerComponent()
+        {
+            Type myType = this.GetType();
+
+            if (!objectTypeListings.ContainsKey(myType))
+            {
+                List<GameObject> temp = new List<GameObject>();
+                objectTypeListings.Add(myType, temp);
+            }
+
+            var list = objectTypeListings[myType];
+            list.Add(this.Parent);
+        }
+        internal void deregisterComponent()
+        {
+            Type myType = this.GetType();
+
+            if (!objectTypeListings.ContainsKey(myType)) return;
+
+            var list = objectTypeListings[myType];
+            
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i].objid == parent.objid)
+                {
+                    list.RemoveAt(i);
+                    break;
+                }
+            }
+        }
+
+        public List<GameObject>? GetObjectsWithType()
+        {
+            if (!objectTypeListings.ContainsKey(GetType())) return null;
+            return objectTypeListings[GetType()];
+        }
+
         /// <summary>
         /// Returns an empty GameObject ready to have components attached. It will be added to the scene at the end of the current tick.
         /// </summary>

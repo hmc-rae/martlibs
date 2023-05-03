@@ -50,6 +50,10 @@ namespace martgamelib
 
             window.Closed += OnClose;
         }
+
+        /// <summary>
+        /// call this pre-frame
+        /// </summary>
         protected internal void prepoll()
         {
             for (int i = 0; i < mKeyQueueDepth; i++)
@@ -74,6 +78,7 @@ namespace martgamelib
         {
             int n = (int)e.Code << 1;
             if (n < 0 || n >= mKeys.Length) return; //safety :thumbsup:
+
             mKeys[n] = false;
             mKeyQueue[mKeyQueueDepth++] = n;
         }
@@ -227,6 +232,26 @@ namespace martgamelib
             if (n < 0 || n >= mMouse.Length) return false;
 
             return mMouse[n];
+        }
+    }
+
+    public struct KeyRegister
+    {
+        public readonly char Key;
+
+        internal bool hasPressed;
+        internal bool hasReleased;
+
+        private bool pressed;
+        private bool held;
+        private bool released;
+
+        public KeyRegister(char k)
+        {
+            Key = k;
+
+            hasPressed = hasReleased = false;
+            pressed = held = released = false;
         }
     }
 }

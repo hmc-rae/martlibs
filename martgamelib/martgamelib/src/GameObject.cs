@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Reflection;
 using martlib;
 using Microsoft.CSharp.RuntimeBinder;
+using System.ComponentModel;
 
 //TODO: Finish the function to add behavior to a game object & enqueue it
 
@@ -37,12 +38,15 @@ namespace martgamelib
         internal Transform transformComponent;
         internal RenderComponent renderComponent;
 
+        [MonSerializer.MonIgnore]
         public FlagStruct Flags;
+        [MonSerializer.MonIgnore]
+        public string Tag;
+        [MonSerializer.MonIgnore]
         public bool Alive;
 
         public Transform Transform => transformComponent;
         public RenderComponent RenderComponent => renderComponent;
-
 
         /// <summary>
         /// Generates a fresh GameObject at a given position.
@@ -176,6 +180,17 @@ namespace martgamelib
             return component;
         }
 
+        /// <summary>
+        /// Returns a component of the given type that this object has - null if it doesnt exist.
+        /// </summary>
+        /// <param name="componentType"></param>
+        /// <returns></returns>
+        public BehaviorComponent? GetComponent(Type componentType)
+        {
+            if (table.ContainsKey(componentType)) return table[componentType];
+            return null;
+        }
+
         //Return true if successfully added
         internal bool addToObject(BehaviorComponent component, Type componentType)
         {
@@ -199,7 +214,11 @@ namespace martgamelib
             ++componentCount;
 
             if (!freshMade)
+            {
+
                 component.OnCreate();
+                component.registerComponent();
+            }
 
             return true;
         }
@@ -208,8 +227,10 @@ namespace martgamelib
         internal bool freshMade = true;
         internal void create()
         {
+            if (!freshMade) return;
             for (int i = 0; i < componentCount; i++)
             {
+                components[i].registerComponent();
                 components[i].OnCreate();
             }
             freshMade = false;
@@ -229,6 +250,23 @@ namespace martgamelib
             }
             if (RenderComponent != null)
                 renderComponent.Render();
+        }
+        internal void dispose()
+        {
+            for (int i = 0; i < componentCount; i++)
+            {
+                components[i].OnDestroy();
+                components[i].deregisterComponent();
+            }
+        }
+
+        public bool Equals(GameObject b)
+        {
+            return objid == b.objid;
+        }
+        public bool Predates(GameObject b)
+        {
+            return objid < b.objid;
         }
     }
 }

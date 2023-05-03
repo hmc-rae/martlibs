@@ -11,6 +11,8 @@ namespace martlib
     /// </summary>
     public struct FlagStruct    
     {
+        public const string VERSION = "1.0.1";
+
         internal static ulong FLAG_MAX = ulong.MaxValue;
         public static FlagStruct ZERO => new FlagStruct(0);
         public static FlagStruct MAX => new FlagStruct(FLAG_MAX);
@@ -74,7 +76,7 @@ namespace martlib
         /// <returns></returns>
         public bool Has(ulong a)
         {
-            return (Flags | a) != 0;
+            return (Flags & a) != 0;
         }
         /// <summary>
         /// Returns true if the flag has some of the same flags as a.
@@ -83,7 +85,7 @@ namespace martlib
         /// <returns></returns>
         public bool Has(FlagStruct a)
         {
-            return (Flags | a.Flags) != 0;
+            return (Flags & a.Flags) != 0;
         }
         /// <summary>
         /// Returns true if the flag has some of the same flags as a.
@@ -93,7 +95,7 @@ namespace martlib
         public bool Has(object b)
         {
             if (b is Enum)
-                return (Flags | (ulong)((dynamic)b)) != 0;
+                return (Flags & (ulong)((dynamic)b)) != 0;
             return false;
         }
 

@@ -8,7 +8,7 @@ namespace martlib
     /// </summary>
     public class Runtimer
     {
-        public const string VERSION = "1.0";
+        public const string VERSION = "1.0.1";
 
         private const double CONV_VAL = 0.001;
 

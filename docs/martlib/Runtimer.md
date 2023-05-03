@@ -8,11 +8,11 @@ By hmc-rae
  - Easy start, stop, restart, and wait for time to elapse
  
 ## Version
- - 1.1
-	- LastFrameRate, a measure of the estimated framerate as per last frame performance, added
-	- FrameRate can be accessed & changed.
  - 1.0
 	- First release
+		- 1.0.1
+			- LastFrameRate, a measure of the estimated framerate as per last frame performance, added
+			- FrameRate can be accessed & changed.
 
 ## Usage
 
