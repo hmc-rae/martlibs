@@ -215,7 +215,6 @@ namespace martgamelib
 
             if (!freshMade)
             {
-
                 component.OnCreate();
                 component.registerComponent();
             }

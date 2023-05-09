@@ -10,10 +10,11 @@ namespace martgamelib
         [JsonIgnore]
         public CameraComponent RenderCamera;
         [JsonInclude]
-        internal int CameraLayer;
+        internal int CameraID;
         public override void OnCreate()
         {
             //Acquire camera by CameraLayer
+            
         }
         public virtual void Render() { }
     }
@@ -46,7 +47,7 @@ namespace martgamelib
         {
             
         }
-        public override void OnFrame()
+        public override void OnTick()
         {
             AnimFrame++;
             if (AnimFrame >= EntityAnimations.GetFrameCount(AnimState))

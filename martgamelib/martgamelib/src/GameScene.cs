@@ -26,6 +26,11 @@ namespace martgamelib
         /// </summary>
         internal List<RenderTarget> renderTargets;
 
+        /// <summary>
+        /// Internal list of cameras - whenever a render component looks for a camera, it'll search here
+        /// </summary>
+        internal List<CameraComponent> cameraComponents;
+
         public martgame Game => martgame;
         public GameWindow GameWindow => window;
         public InputManager Input => input;

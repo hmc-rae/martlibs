@@ -30,7 +30,7 @@ namespace martlib
 #pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 #pragma warning restore CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
     {
-        public const string VERSION = "1.0";
+        public const string VERSION = "1.0.1";
         /// <summary>
         /// A vector representing <0, 0>
         /// </summary>
@@ -248,15 +248,35 @@ namespace martlib
         }
 
         /// <summary>
-        /// The orthogonal projection of this vector - the vector rotated by 90 degrees, clockwise (or, rotated by the Unit Y vector). 
+        /// The orthogonal projection of this vector - the vector rotated by 90 degrees, counter-clockwise (or, rotated by the Unit Y vector). 
         /// </summary>
-        /// <param name="sign"></param>
-        /// <returns></returns>
         public Vector Orthogonal
         {
             get
             {
-                return new Vector(Y, -X); 
+                return new Vector(-Y, X); 
+            }
+        }
+
+        /// <summary>
+        /// The clockwise orthogonal projection of this vector - the vector rotated by 90 degrees, clockwise (or, rotated by the inverse Unit Y vector). 
+        /// </summary>
+        public Vector OrthogonalC
+        {
+            get
+            {
+                return new Vector(Y, -X);
+            }
+        }
+
+        /// <summary>
+        /// The flipped version of this vector along the Y axis - rotating a vector by the flipped version of itself will result in <1, 0>
+        /// </summary>
+        public Vector Flip
+        {
+            get
+            {
+                return new Vector(X, -Y);
             }
         }
 
@@ -334,6 +354,29 @@ namespace martlib
             double max = (UNIT_X - off).SqrMagnitude;
             double dir = (heading - this).SqrMagnitude;
             return dir <= max;
+        }
+
+        /// <summary>
+        /// Returns a string representation of the vector in format <X, Y>
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return $"<{X}, {Y}>";
+        }
+        /// <summary>
+        /// Returns a string representation of the vector in format <X, Y>, with a limited number of decimal places (rounded).
+        /// </summary>
+        /// <param name="decimals"></param>
+        /// <returns></returns>
+        public string ToString(int decimals)
+        {
+            string format = "0.";
+            for (int i = 0; i < decimals; i++)
+            {
+                format += "#";
+            }
+            return $"<{X.ToString(format)}, {Y.ToString(format)}>";
         }
     }
 }

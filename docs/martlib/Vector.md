@@ -6,6 +6,11 @@ By hmc-rae
 ## Version
  - 1.0
 	- First release
+		- 1.0.1
+			- Added ToString overloads
+			- Added field `OrthogonalC`, which represents the clockwise rotation of the vector
+			- Added field `Flip`, which represents the flipped version of the vector
+			- Field `Orthogonal` now represents the counter-clockwise rotation of the vector (rotate by Unit Y vector)
 
 ## Usage
 
@@ -42,7 +47,17 @@ The X & Y coordinates that make up the vector.
 ```csharp
 Vector Orthogonal
 ```
-An orthogonal (rotated by 90 degrees, clockwise) version of this vector.
+An orthogonal projection of this vector, counter-clockwise.
+
+```csharp
+Vector OrthogonalC
+```
+An orthogonal projection of this vector, clockwise.
+
+```csharp
+Vector Flip
+```
+A flipped projection of this vector, so that rotating vector A by the flipped version of itself, the result will be <1, 0>
 
 ```csharp
 double SqrMagnitude

@@ -26,6 +26,10 @@ namespace martgamelib
         private PrefabLibrary library;
         private bool DecoupleRender = false;
 
+        internal WindowDetails render;
+        internal LogisticDetails logistic;
+        internal PathingDetails pathing;
+
         public GameScene CurrentScene => scene;
         public InputManager Input => input;
         public Runtimer FrameTime => fTime;    //Timer that controls rendering
@@ -35,43 +39,52 @@ namespace martgamelib
 
         public martgame()
         {
-            generate(new WindowDetails(), new LogisticDetails(), new PathingDetails());
+            render = new WindowDetails();
+            logistic = new LogisticDetails();
+            pathing = new PathingDetails();
+            generate();
         }
         public martgame(WindowDetails w, LogisticDetails l)
         {
-            generate(w, l, new PathingDetails());
+            render = w;
+            logistic = l;
+            pathing = new PathingDetails();
+            generate();
         }
-        public martgame(WindowDetails w, LogisticDetails l, PathingDetails d)
+        public martgame(WindowDetails w, LogisticDetails l, PathingDetails p)
         {
-            generate(w, l, d);
+            render = w;
+            logistic = l;
+            pathing = p;
+            generate();
         }
 
-        private void generate(WindowDetails w, LogisticDetails l, PathingDetails d)
+        private void generate()
         {
-            SpriteHandler.Initialize(d.texPath, d.entPath);
+            SpriteHandler.Initialize(pathing.texPath, pathing.entPath);
 
             //Initialize component reader to default directory
             //It'll be Assets\\Scripts, read all .dll in there for valid
-            ComponentManager.Initialize(d.libsPath);
+            ComponentManager.Initialize(pathing.libsPath);
 
             //Initialize prefab reader
-            PrefabLib.LoadPrefabs(d.prefabPath);
+            PrefabLib.LoadPrefabs(pathing.prefabPath);
 
-            DecoupleRender = l.DecoupledRender;
+            DecoupleRender = logistic.DecoupledRender;
             //If true, then create a tick runner and run it separately.
             //If false, then set both timers to be the same, and run on framerate exclusively.
             //Still utilizes a distributor for objects
 
             input = new InputManager();
-            window = new GameWindow(w.Width, w.Height, w.Title, input, w.Fullscreen ? GameWindow.FULLSCREEN_STYLE : GameWindow.DEFAULT_STYLE);
+            window = new GameWindow(render.Width, render.Height, render.Title, input, render.Fullscreen ? GameWindow.FULLSCREEN_STYLE : GameWindow.DEFAULT_STYLE);
 
 
-            fTime = new Runtimer(1000 / l.FrameRate);
+            fTime = new Runtimer((float)logistic.FrameRate);
 
             if (DecoupleRender)
             {
                 //If the game logic runs on a separate thread, give the logic thread its own timer
-                tTime = new Runtimer(1000 / l.TickRate);
+                tTime = new Runtimer((float)logistic.TickRate);
             }
             else
             {
@@ -79,7 +92,7 @@ namespace martgamelib
                 tTime = fTime;
             }
 
-            scene = new GameScene(l.ObjectPoolSize, l.WorkerThreadCount, this);
+            scene = new GameScene(logistic.ObjectPoolSize, logistic.WorkerThreadCount, this);
 
             tickRunner = new TickRunner(scene, this);
         }
@@ -91,6 +104,8 @@ namespace martgamelib
         /// </summary>
         public void Run()
         {
+            scene.EndFrame(); //Add everything to the scene properly.
+
             fTime.Start();
 
             if (DecoupleRender)
