@@ -104,6 +104,8 @@ namespace martgamelib
         /// </summary>
         public void Run()
         {
+            window.ChangeScene(scene);
+
             scene.EndFrame(); //Add everything to the scene properly.
 
             fTime.Start();

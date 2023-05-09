@@ -30,7 +30,8 @@ namespace martlib
 #pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 #pragma warning restore CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
     {
-        public const string VERSION = "1.0.1";
+        public const double RAD_CONST = 180.0 / Math.PI;
+        public const string VERSION = "1.0.2";
         /// <summary>
         /// A vector representing <0, 0>
         /// </summary>
@@ -362,7 +363,7 @@ namespace martlib
         /// <returns></returns>
         public override string ToString()
         {
-            return $"<{X}, {Y}>";
+            return ToString(2);
         }
         /// <summary>
         /// Returns a string representation of the vector in format <X, Y>, with a limited number of decimal places (rounded).
@@ -377,6 +378,38 @@ namespace martlib
                 format += "#";
             }
             return $"<{X.ToString(format)}, {Y.ToString(format)}>";
+        }
+
+        /// <summary>
+        /// Gets the representation of this unit vector in radians, with 0 radians being (1, 0)
+        /// </summary>
+        public double Radians
+        {
+            get
+            {
+                return Math.Acos(X);
+            }
+            set
+            {
+                X = Math.Cos(value);
+                Y = Math.Sin(value);
+            }
+        }
+
+        /// <summary>
+        /// Gets the representation of this unit vector in degrees, with 0 degrees being (1, 0)
+        /// </summary>
+        public double Degrees
+        {
+            get
+            {
+                return Math.Acos(X) * RAD_CONST;
+            }
+            set
+            {
+                X = Math.Cos(value / RAD_CONST);
+                Y = Math.Sin(value / RAD_CONST);
+            }
         }
     }
 }

@@ -21,15 +21,85 @@ namespace martgamelib
         internal int[] rems;
         internal uint remspos;
 
-        /// <summary>
-        /// We now have our own internal list of rendertargets, meaning scenes can be cached.
-        /// </summary>
-        internal List<RenderTarget> renderTargets;
+        //Our render layers for this scene
+        internal List<RenderLayer> renderlayers;
 
-        /// <summary>
-        /// Internal list of cameras - whenever a render component looks for a camera, it'll search here
-        /// </summary>
-        internal List<CameraComponent> cameraComponents;
+        public RenderLayer? GetRenderLayer(int RenderLayerID)
+        {
+            for (int l = 0, h = renderlayers.Count, i = renderlayers.Count / 2, p = -1; l < h && p != i; p = i, i = (l + h) / 2)
+            {
+                if (renderlayers[i].LayerID == RenderLayerID)
+                {
+                    return renderlayers[i];
+                }
+                else if (renderlayers[i].LayerID > RenderLayerID)
+                {
+                    l = i;
+                }
+                else if (renderlayers[i].LayerID < RenderLayerID)
+                {
+                    h = i;
+                }
+            }
+            return null;
+        }
+        internal void RegisterRenderLayer(RenderLayer layer)
+        {
+            layer.scene = this;
+            layer.Create();
+            for (int i = 0; i < renderlayers.Count; i++)
+            {
+                if (renderlayers[i].LayerID < layer.LayerID) continue;
+                if (renderlayers[i].LayerID == layer.LayerID) throw new IDException(layer.LayerID, 1, "RenderLayer");
+                if (renderlayers[i].LayerID > layer.LayerID)
+                {
+                    renderlayers.Insert(i, layer);
+                }
+            }
+        }
+        internal class IDException : Exception 
+        {
+            private int id;
+            private int code;
+            private string str;
+
+            public IDException(int i, int c, string t)
+            {
+                id = i;
+                code = c;
+                str = t;
+            }
+            public override string ToString()
+            {
+                return $"Tried to create duplicate instance of {str} #{id}\terror {code}";
+            }
+        }
+
+        //Cameras for this scene
+        internal List<CameraEntry> cameras;
+        
+        internal CameraEntry getCamera(int cameraID)
+        {
+            for (int i = 0; i < cameras.Count; i++)
+            {
+                if (cameras[i].ID == cameraID)
+                {
+                    return cameras[i];
+                }
+            }
+            var cam = new CameraEntry();
+            cam.ID = cameraID;
+            cameras.Add(cam);
+            return cam;
+        }
+        
+
+
+        internal class CameraEntry
+        {
+            public int ID;
+            public CameraComponent? camera;
+        }
 
         public martgame Game => martgame;
         public GameWindow GameWindow => window;
@@ -56,7 +126,7 @@ namespace martgamelib
             for (int i = 0; i < workerCount; i++)
                 new WorkerPool(distributorPool);
 
-            renderTargets = new List<RenderTarget>();
+            renderlayers = new List<RenderLayer>();
 
             rems = new int[poolSize];
             remspos = 0;

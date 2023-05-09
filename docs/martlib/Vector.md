@@ -11,7 +11,9 @@ By hmc-rae
 			- Added field `OrthogonalC`, which represents the clockwise rotation of the vector
 			- Added field `Flip`, which represents the flipped version of the vector
 			- Field `Orthogonal` now represents the counter-clockwise rotation of the vector (rotate by Unit Y vector)
-
+		- 1.0.2
+			- Added two new fields: `Radians` and `Degrees`, both of which convert the unit vector to & from the respective scalar values.
+			- Defaulted the string representation to only print 2 decimal places. Max accuracy can be reached with `Vector.ToString(int decimal)`.
 ## Usage
 
 ### Operators
@@ -80,9 +82,24 @@ Vector Inverse
 The inverted form of the current vector so that `Inverse + Normal = <0, 0>`
 
 ```csharp
+Vector Flip
+```
+A flipped version of the given vector, so that rotating a vector by its flipped variant results in `<1, 0>`.
+
+```csharp
 Vector Absolute
 ```
 The absolute form of the current vector (both axis > 0)
+
+```csharp
+double Radians
+```
+The scalar value of the unit vector, in Radians. 
+
+```csharp
+double Degrees
+```
+The scalar value of the unit vector, in Degrees.
 
 ### Methods
 
