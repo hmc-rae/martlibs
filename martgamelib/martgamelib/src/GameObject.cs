@@ -35,17 +35,16 @@ namespace martgamelib
         internal List<BehaviorComponent> components;
         internal int componentCount;
 
-        internal Transform transformComponent;
         internal RenderComponent renderComponent;
 
         [MonSerializer.MonIgnore]
         public FlagStruct Flags;
         [MonSerializer.MonIgnore]
+        public Transform Transform;
+        [MonSerializer.MonIgnore]
         public string Tag;
         [MonSerializer.MonIgnore]
         public bool Alive;
-
-        public Transform Transform => transformComponent;
         public RenderComponent RenderComponent => renderComponent;
 
         /// <summary>
@@ -65,7 +64,7 @@ namespace martgamelib
 
             Flags = new FlagStruct();
 
-            transformComponent = origin;
+            Transform = origin;
 
             freshMade = true;
         }
@@ -84,7 +83,7 @@ namespace martgamelib
             table = new Dictionary<Type, BehaviorComponent>(32);
             components = new List<BehaviorComponent>(32);
 
-            transformComponent = new Transform(0, 0);
+            Transform = new Transform(0, 0);
 
             Flags = new FlagStruct();
 
@@ -106,11 +105,13 @@ namespace martgamelib
             table = new Dictionary<Type, BehaviorComponent>(32);
             components = new List<BehaviorComponent>(32);
 
-            transformComponent = origin;
+            Transform = origin;
 
             Flags = new FlagStruct();
 
             freshMade = true;
+            Alive = true;
+            destroy = false;
         }
         /// <summary>
         /// Generates a fresh GameObject at a default position.
@@ -126,10 +127,12 @@ namespace martgamelib
             table = new Dictionary<Type, BehaviorComponent>(32);
             components = new List<BehaviorComponent>(32);
 
-            transformComponent = new Transform(0, 0);
+            Transform = new Transform(0, 0);
             Flags = new FlagStruct();
 
-            freshMade = true;
+            freshMade = true; 
+            Alive = true;
+            destroy = false;
         }
 
 
@@ -233,6 +236,7 @@ namespace martgamelib
                 components[i].OnCreate();
             }
             freshMade = false;
+            Alive = true;
         }
         internal void behavior()
         {

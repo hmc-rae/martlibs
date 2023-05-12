@@ -20,13 +20,13 @@ namespace martgamelib
         public Transform(double x, double y)
         {
             Position = new Vector(x, y);
-            Rotation = new Vector();
+            Rotation = Vector.UNIT_X;
             Scale = Vector.XY;
         }
         public Transform(Vector position)
         {
             this.Position = position;
-            Rotation = new Vector();
+            Rotation = Vector.UNIT_X;
             Scale = Vector.XY;
         }
         public Transform(double x, double y, double w, double z, double a, double b)

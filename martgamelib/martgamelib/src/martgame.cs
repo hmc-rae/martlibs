@@ -160,6 +160,7 @@ namespace martgamelib
             while (window.IsOpen)
             {
                 window.StartFrame();
+                window.DispatchEvents();
 
                 //If not decoupled, do all the game logic here.
                 if (!DecoupleRender)

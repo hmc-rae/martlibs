@@ -23,7 +23,8 @@ namespace martgamelib
             set
             {
                 camID = value;
-                camEntry = parent.scene.getCamera(camID);
+                if (parent != null)
+                    camEntry = parent.scene.getCamera(camID);
             }
         }
 
@@ -81,9 +82,9 @@ namespace martgamelib
             Sprite spr = EntityAnimations.GetFrame(AnimState, AnimFrame);
             if (spr == null) return;
 
-            spr.Scale = martgame.ToSFMLVector(parent.transformComponent.Scale);
+            spr.Scale = martgame.ToSFMLVector(parent.Transform.Scale);
             spr.Position = martgame.ToSFMLVector(relative);
-            spr.Rotation = (float)(parent.transformComponent.Rotation.Degrees + RenderCamera.Parent.Transform.Rotation.Flip.Degrees);
+            spr.Rotation = (float)(parent.Transform.Rotation.Degrees + RenderCamera.Parent.Transform.Rotation.Flip.Degrees);
 
             RenderCamera.Render(spr);
         }
@@ -105,6 +106,8 @@ namespace martgamelib
         [MonSerializer.MonInclude]
         public Color color;
 
+        double counter = 0;
+
         public override void OnCreate()
         {
             base.OnCreate();
@@ -119,11 +122,13 @@ namespace martgamelib
 
             relative = RenderCamera.GetMappedPosition(relative);
 
-            _shape.Scale = martgame.ToSFMLVector(parent.transformComponent.Scale);
+            _shape.Scale = martgame.ToSFMLVector(parent.Transform.Scale);
             _shape.Position = martgame.ToSFMLVector(relative);
-            _shape.Rotation = (float)(parent.transformComponent.Rotation.Degrees + RenderCamera.Parent.Transform.Rotation.Flip.Degrees);
+            _shape.Rotation = (float)(parent.Transform.Rotation.Degrees + RenderCamera.Parent.Transform.Rotation.Degrees);
+            _shape.FillColor = color;
 
             RenderCamera.Render(_shape);
+
         }
     }
 }

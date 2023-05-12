@@ -31,7 +31,7 @@ namespace martlib
 #pragma warning restore CS0660 // Type defines operator == or operator != but does not override Object.Equals(object o)
     {
         public const double RAD_CONST = 180.0 / Math.PI;
-        public const string VERSION = "1.0.2";
+        public const string VERSION = "1.0.3";
         /// <summary>
         /// A vector representing <0, 0>
         /// </summary>
@@ -387,6 +387,8 @@ namespace martlib
         {
             get
             {
+                double tmp = Math.Acos(X);
+                if (Y < 0) tmp = -tmp;
                 return Math.Acos(X);
             }
             set
@@ -403,7 +405,9 @@ namespace martlib
         {
             get
             {
-                return Math.Acos(X) * RAD_CONST;
+                double tmp = Math.Acos(X) * RAD_CONST;
+                if (Y < 0) tmp = -tmp;
+                return tmp;
             }
             set
             {

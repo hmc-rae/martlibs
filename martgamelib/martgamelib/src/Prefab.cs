@@ -93,7 +93,7 @@ namespace martgamelib
         internal void Attach(GameObject obj)
         {
             obj.Flags = flags;
-            obj.transformComponent = transform;
+            obj.Transform = transform;
             for (int i = 0; i < components.Length; i++)
             {
                 BehaviorComponent comp = components[i].getComponent();

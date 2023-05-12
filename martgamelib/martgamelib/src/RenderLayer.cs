@@ -88,7 +88,7 @@ namespace martgamelib
         internal void Display(GameWindow window)
         {
             //This might not be necessary. Test to see if it is
-            //mTex.Display();
+            target.Display();
 
             sprite.Scale = martgame.ToSFMLVector(PixelScale);
             sprite.Position = martgame.ToSFMLVector(MainWindowPosition);

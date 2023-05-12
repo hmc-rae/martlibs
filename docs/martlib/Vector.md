@@ -14,6 +14,8 @@ By hmc-rae
 		- 1.0.2
 			- Added two new fields: `Radians` and `Degrees`, both of which convert the unit vector to & from the respective scalar values.
 			- Defaulted the string representation to only print 2 decimal places. Max accuracy can be reached with `Vector.ToString(int decimal)`.
+		- 1.0.3
+			- Fields `Radians` and `Degrees` now return negative values as well, providing a continuous range from -PI/2 to PI/2, and -180 to 180 respectively.
 ## Usage
 
 ### Operators

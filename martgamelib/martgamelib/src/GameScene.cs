@@ -54,8 +54,10 @@ namespace martgamelib
                 if (renderlayers[i].LayerID > layer.LayerID)
                 {
                     renderlayers.Insert(i, layer);
+                    return;
                 }
             }
+            renderlayers.Add(layer);
         }
         internal class IDException : Exception 
         {
@@ -192,6 +194,7 @@ namespace martgamelib
             GameObject obj = new GameObject(this);
             obj.objid = scid++;
             tempPool.Add(obj);
+            obj.Alive = false;
 
             return obj;
         }
@@ -206,6 +209,7 @@ namespace martgamelib
             GameObject obj = new GameObject(this, origin);
             obj.objid = scid++;
             tempPool.Add(obj);
+            obj.Alive = false;
 
             return obj;
         }
@@ -222,6 +226,7 @@ namespace martgamelib
             tempPool.Add(obj);
 
             prefab.Attach(obj);
+            obj.Alive = false;
 
             return obj;
         }
@@ -239,7 +244,8 @@ namespace martgamelib
 
             prefab.Attach(obj);
 
-            obj.transformComponent = origin;
+            obj.Transform = origin;
+            obj.Alive = false;
 
             return obj;
         }
@@ -258,6 +264,8 @@ namespace martgamelib
 
             obj.freshMade = false;
 
+            obj.Alive = true;
+
             return obj;
         }
         public GameObject InstantiateUrgent(Transform origin)
@@ -273,6 +281,7 @@ namespace martgamelib
             objectPool.Add(obj);
 
             obj.freshMade = false;
+            obj.Alive = true;
 
             return obj;
         }
@@ -291,6 +300,7 @@ namespace martgamelib
             obj.freshMade = false;
 
             prefab.Attach(obj);
+            obj.Alive = true;
 
             return obj;
         }
@@ -309,6 +319,7 @@ namespace martgamelib
             obj.freshMade = false;
 
             prefab.Attach(obj);
+            obj.Alive = true;
 
             return obj;
         }
@@ -494,7 +505,9 @@ namespace communistOverhaul
         protected override void ProcessObject(GameObject? obj)
         {
             if (obj != null && !obj.destroy && obj.Alive)
+            {
                 obj.behavior();
+            }
         }
     }
 }

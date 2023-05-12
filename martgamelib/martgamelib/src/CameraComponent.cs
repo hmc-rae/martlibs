@@ -70,7 +70,7 @@ namespace martgamelib
         }
         public Vector GetRelativePosition(GameObject target)
         {
-            Vector relativePos = target.transformComponent.Position - this.parent.Transform.Position;
+            Vector relativePos = target.Transform.Position - this.parent.Transform.Position;
             Vector rotatedPos = relativePos ^ this.parent.Transform.Rotation.Flip;
             return rotatedPos;
         }
