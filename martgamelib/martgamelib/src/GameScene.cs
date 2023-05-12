@@ -313,7 +313,7 @@ namespace martgamelib
         }
 
         /// <summary>
-        /// Returns a GameObject that has the given tag. Returns null if none exist.
+        /// Returns a GameObject that has the given tag. Returns null if none exist. <br></br> Don't use this function every frame.
         /// </summary>
         /// <param name="tag"></param>
         /// <param name="origin"></param>
@@ -328,7 +328,7 @@ namespace martgamelib
             return null;
         }
         /// <summary>
-        /// Returns an array of GameObjects that have the given tag.
+        /// Returns an array of GameObjects that have the given tag. <br></br> Don't use this function every frame.
         /// </summary>
         /// <param name="tag"></param>
         /// <returns></returns>
@@ -349,9 +349,9 @@ namespace martgamelib
             }
             return lis;
         }
-        
+
         /// <summary>
-        /// Returns a GameObject that has the given flag string. Returns null if none exist.
+        /// Returns a GameObject that has the given flag string. Returns null if none exist. <br></br> Don't use this function every frame.
         /// </summary>
         /// <param name="flags"></param>
         /// <param name="exactMatch"></param>
@@ -374,7 +374,7 @@ namespace martgamelib
             return null;
         }
         /// <summary>
-        /// Returns an array of GameObjects that have the given flag string.
+        /// Returns an array of GameObjects that have the given flag string. <br></br> Don't use this function every frame.
         /// </summary>
         /// <param name="flags"></param>
         /// <param name="exactMatch"></param>

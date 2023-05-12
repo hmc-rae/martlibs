@@ -173,7 +173,7 @@ namespace martlib
             }
             else if (obj.GetType().GetInterface(nameof(ICollection<T>)) != null)
             {
-                //process as generic
+                //process as generic collection
                 return;
             }
 

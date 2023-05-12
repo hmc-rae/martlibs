@@ -17,67 +17,44 @@ namespace martgamelib
         /// <summary>
         /// The dimensions of the target in pixels.
         /// </summary>
-        public Vector PixelSize
-        {
-            get
-            {
-                return pixelRadius * 2;
-            }
-            set
-            {
-                pixelRadius = value / 2;
-            }
-        }
+        public Vector PixelSize => pixelRadius * 2;
         /// <summary>
         /// The radius of the target in pixels.
         /// </summary>
-        public Vector PixelRadius
-        {
-            get
-            {
-                return pixelRadius;
-            }
-            set
-            {
-                pixelRadius = value;
-            }
-        }
+        public Vector PixelRadius => pixelRadius;
+
+
         /// <summary>
         /// The rendering scale of the target to the main window.
         /// </summary>
-        public Vector PixelScale
-        {
-            get
-            {
-                return pixelScale;
-            }
-            set
-            {
-                pixelScale = value;
-                sprite.Scale = martgame.ToSFMLVector(pixelScale);
-            }
-        }
+        public Vector PixelScale;
         /// <summary>
         /// The position of the target in the main window.
         /// </summary>
-        public Vector MainWindowPosition
-        {
-            get
-            {
-                return mainPosition;
-            }
-            set
-            {
-                mainPosition = value;
-                sprite.Position = martgame.ToSFMLVector(mainPosition);
-            }
-        }
+        public Vector MainWindowPosition;
 
+        /// <summary>
+        /// Updates the scaling of the layer so that it appears flush with the screen.
+        /// </summary>
         public void ScaleToMainWindow()
         {
             Vector2u size = scene.GameWindow.Size;
-            pixelScale.X = size.X / PixelSize.X;
-            pixelScale.Y = size.Y / PixelSize.Y;
+            PixelScale.X = size.X / PixelSize.X;
+            PixelScale.Y = size.Y / PixelSize.Y;
+        }
+        /// <summary>
+        /// Sets the position of the layer on the main window as a scale from (-1, -1), the bottom left corner, to the top right corner (1, 1).
+        /// </summary>
+        /// <param name="relative"></param>
+        public void SetRelativePosition(Vector relative)
+        {
+            Vector size = martgame.FromSFMLVector(scene.GameWindow.Size);
+            size /= 2;
+
+            relative = relative.Flip * size;
+            relative += size;
+
+            MainWindowPosition = relative;
         }
 
         internal GameScene scene;
@@ -86,10 +63,6 @@ namespace martgamelib
         private int layerID;
         [MonSerializer.MonInclude]
         private Vector pixelRadius;
-        [MonSerializer.MonInclude]
-        private Vector pixelScale;
-        [MonSerializer.MonInclude]
-        private Vector mainPosition;
 
         public bool ClearBackground;
 
@@ -105,6 +78,9 @@ namespace martgamelib
         {
             //This might not be necessary. Test to see if it is
             //mTex.Display();
+
+            sprite.Scale = martgame.ToSFMLVector(PixelScale);
+            sprite.Position = martgame.ToSFMLVector(MainWindowPosition);
 
             window.Draw(sprite);
 

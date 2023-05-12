@@ -1,6 +1,7 @@
 ﻿using communistOverhaul;
 using martlib;
 using SFML.System;
+using System.Diagnostics;
 
 /* TODO:
  * Implement prefab generation into GameObject.cs
@@ -16,6 +17,14 @@ namespace martgamelib
         internal static Vector2f ToSFMLVector(Vector vector)
         {
             return new Vector2f((float)vector.X, (float)vector.Y);
+        }
+        internal static Vector FromSFMLVector(Vector2u vector)
+        {
+            return new Vector(vector.X, vector.Y);
+        }
+        internal static Vector FromSFMLVector(Vector2f vector)
+        {
+            return new Vector(vector.X, vector.Y);
         }
 
         private GameScene scene;
@@ -42,6 +51,7 @@ namespace martgamelib
             render = new WindowDetails();
             logistic = new LogisticDetails();
             pathing = new PathingDetails();
+
             generate();
         }
         public martgame(WindowDetails w, LogisticDetails l)
@@ -49,6 +59,7 @@ namespace martgamelib
             render = w;
             logistic = l;
             pathing = new PathingDetails();
+
             generate();
         }
         public martgame(WindowDetails w, LogisticDetails l, PathingDetails p)
@@ -56,7 +67,39 @@ namespace martgamelib
             render = w;
             logistic = l;
             pathing = p;
+
             generate();
+        }
+
+        public martgame(string defscene)
+        {
+            render = new WindowDetails();
+            logistic = new LogisticDetails();
+            pathing = new PathingDetails();
+
+            generate();
+
+            SceneLoader.LoadNewScene(scene, $"{pathing.scenePath}\\{defscene}\\", defscene);
+        }
+        public martgame(string defscene, WindowDetails w, LogisticDetails l)
+        {
+            render = w;
+            logistic = l;
+            pathing = new PathingDetails();
+
+            generate();
+
+            SceneLoader.LoadNewScene(scene, $"{pathing.scenePath}\\{defscene}\\", defscene);
+        }
+        public martgame(string defscene, WindowDetails w, LogisticDetails l, PathingDetails p)
+        {
+            render = w;
+            logistic = l;
+            pathing = p;
+
+            generate();
+
+            SceneLoader.LoadNewScene(scene, $"{pathing.scenePath}\\{defscene}\\", defscene);
         }
 
         private void generate()
@@ -187,7 +230,7 @@ namespace martgamelib
         }
         public struct PathingDetails
         {
-            public string texPath, entPath, libsPath, prefabPath;
+            public string texPath, entPath, libsPath, prefabPath, scenePath;
             public PathingDetails()
             {
                 //The two files for reading where animations are located.
@@ -199,6 +242,9 @@ namespace martgamelib
 
                 //Location of all prefabs to be utilized in-game.
                 prefabPath = $"{Directory.GetCurrentDirectory()}\\Assets\\Prefabs";
+
+                //Location of scene folders
+                scenePath = $"{Directory.GetCurrentDirectory()}\\Assets\\Scenes";
             }
         }
     }

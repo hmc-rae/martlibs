@@ -104,9 +104,29 @@ namespace martgamelib
     }
     public static class SceneLoader
     {
-        public static void LoadNewScene(GameScene currentScene, string scenePath)
+        public static void LoadNewScene(GameScene currentScene, string scenePath, string sceneName)
         {
+            if (!Directory.Exists(scenePath)) throw new DirectoryNotFoundException($"Could not find {scenePath}");
 
+            //Load scene entity prefabs
+            PrefabLibrary sceneEntities = new PrefabLibrary();
+            sceneEntities.LoadPrefabsFromFile(scenePath);
+
+            //Load render layers
+            RenderLayer[] layers = MonSerializer.Deserialize<RenderLayer[]>($"{scenePath}\\{sceneName}.lyr");
+            
+            //Apply the render layers to the scene
+            for (int i = 0; i < layers.Length; i++)
+            {
+                currentScene.RegisterRenderLayer(layers[i]);
+            }
+
+            //Create an instance of every prefab in the scene
+            List<Prefab> prefabs = sceneEntities.Prefabs;
+            for (int i = 0; i < prefabs.Count; i++)
+            {
+                currentScene.Instantiate(prefabs[i]);
+            }
         }
     }
 }
