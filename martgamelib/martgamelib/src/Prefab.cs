@@ -32,7 +32,8 @@ namespace martgamelib
         {
             Prefabs = new List<Prefab>();
 
-            Functions.Seek(directory, LoadPrefabsFromFile);
+            if (Directory.Exists(directory))
+                Functions.Seek(directory, LoadPrefabsFromFile);
         }
 
         /// <summary>

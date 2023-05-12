@@ -13,8 +13,10 @@ namespace martgamelib
         {
             types = new List<Type>();
             typeLookup = new Dictionary<string, Type>();
-
-            Functions.Seek(directory, findComponents);
+            if (Directory.Exists(directory))
+            {
+                Functions.Seek(directory, findComponents);
+            }
         }
 
         public static Type GetTypeFromName(string name)

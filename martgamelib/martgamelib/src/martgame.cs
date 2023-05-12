@@ -111,6 +111,7 @@ namespace martgamelib
             ComponentManager.Initialize(pathing.libsPath);
 
             //Initialize prefab reader
+            library = new PrefabLibrary();
             PrefabLib.LoadPrefabs(pathing.prefabPath);
 
             DecoupleRender = logistic.DecoupledRender;
@@ -215,7 +216,6 @@ namespace martgamelib
             public uint ObjectPoolSize, WorkerThreadCount;
             public long FrameRate;
             public long TickRate;
-            public string DefaultScene;
             public bool DecoupledRender;
 
             public LogisticDetails()
@@ -224,7 +224,6 @@ namespace martgamelib
                 WorkerThreadCount = 4;
                 FrameRate = 60;
                 TickRate = 20;
-                DefaultScene = "";
                 DecoupledRender = true;
             }
         }

@@ -248,14 +248,10 @@
           "SFML.Window": "2.5.0"
         },
         "compile": {
-          "lib/netstandard2.0/SFML.Audio.dll": {
-            "related": ".xml"
-          }
+          "lib/netstandard2.0/SFML.Audio.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/SFML.Audio.dll": {
-            "related": ".xml"
-          }
+          "lib/netstandard2.0/SFML.Audio.dll": {}
         }
       },
       "SFML.Graphics/2.5.0": {
@@ -266,14 +262,10 @@
           "SFML.Window": "2.5.0"
         },
         "compile": {
-          "lib/netstandard2.0/SFML.Graphics.dll": {
-            "related": ".xml"
-          }
+          "lib/netstandard2.0/SFML.Graphics.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/SFML.Graphics.dll": {
-            "related": ".xml"
-          }
+          "lib/netstandard2.0/SFML.Graphics.dll": {}
         }
       },
       "SFML.Net/2.5.0": {
@@ -291,14 +283,10 @@
           "CSFML": "2.5.0"
         },
         "compile": {
-          "lib/netstandard2.0/SFML.System.dll": {
-            "related": ".xml"
-          }
+          "lib/netstandard2.0/SFML.System.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/SFML.System.dll": {
-            "related": ".xml"
-          }
+          "lib/netstandard2.0/SFML.System.dll": {}
         }
       },
       "SFML.Window/2.5.0": {
@@ -308,14 +296,10 @@
           "SFML.System": "2.5.0"
         },
         "compile": {
-          "lib/netstandard2.0/SFML.Window.dll": {
-            "related": ".xml"
-          }
+          "lib/netstandard2.0/SFML.Window.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/SFML.Window.dll": {
-            "related": ".xml"
-          }
+          "lib/netstandard2.0/SFML.Window.dll": {}
         }
       }
     }
@@ -460,19 +444,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Harris\\.nuget\\packages\\": {}
+    "C:\\Users\\harry\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Files\\Programming\\Projects\\martlibs\\martgamelib\\martgamelib\\martgamelib.csproj",
+      "projectUniqueName": "C:\\Users\\harry\\Desktop\\the stuff\\PROJECTS\\martlibs\\martgamelib\\martgamelib\\martgamelib.csproj",
       "projectName": "martgamelib",
-      "projectPath": "D:\\Files\\Programming\\Projects\\martlibs\\martgamelib\\martgamelib\\martgamelib.csproj",
-      "packagesPath": "C:\\Users\\Harris\\.nuget\\packages\\",
-      "outputPath": "D:\\Files\\Programming\\Projects\\martlibs\\martgamelib\\martgamelib\\obj\\",
+      "projectPath": "C:\\Users\\harry\\Desktop\\the stuff\\PROJECTS\\martlibs\\martgamelib\\martgamelib\\martgamelib.csproj",
+      "packagesPath": "C:\\Users\\harry\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\harry\\Desktop\\the stuff\\PROJECTS\\martlibs\\martgamelib\\martgamelib\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Harris\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\harry\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -509,8 +493,7 @@
           "net47",
           "net471",
           "net472",
-          "net48",
-          "net481"
+          "net48"
         ],
         "assetTargetFallback": true,
         "warn": true,
@@ -519,7 +502,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.402\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.200\\RuntimeIdentifierGraph.json"
       }
     }
   }

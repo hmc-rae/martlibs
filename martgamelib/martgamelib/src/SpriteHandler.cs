@@ -1,8 +1,7 @@
 ﻿using SFML.Graphics;
 using SFML.System;
 using System.Diagnostics;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.IO;
 using martlib;
 
 namespace martgamelib
@@ -11,12 +10,29 @@ namespace martgamelib
     {
         internal static EntityRegister entRegister;
         internal static TextureRegister texRegister;
+
         public static void Initialize(string texPath, string entPath)
         {
-            texRegister = MonSerializer.Deserialize<TextureRegister>(texPath);
+            if (File.Exists(texPath))
+            {
+                texRegister = MonSerializer.Deserialize<TextureRegister>(texPath);
+            }
+            else
+            {
+                texRegister = new TextureRegister();
+            }
             texRegister.Build();
-            entRegister = MonSerializer.Deserialize<EntityRegister>(entPath);
+
+            if (File.Exists(entPath))
+            {
+                entRegister = MonSerializer.Deserialize<EntityRegister>(entPath);
+            }
+            else
+            {
+                entRegister = new EntityRegister();
+            }
             entRegister.Build();
+
         }
 
         /// <summary>

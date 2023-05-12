@@ -18,3 +18,23 @@ D:\Files\Programming\Projects\martlibs\martgamelib\martgamelib\obj\Debug\net6.0\
 D:\Files\Programming\Projects\martlibs\martgamelib\martgamelib\obj\Debug\net6.0\refint\martgamelib.dll
 D:\Files\Programming\Projects\martlibs\martgamelib\martgamelib\obj\Debug\net6.0\martgamelib.pdb
 D:\Files\Programming\Projects\martlibs\martgamelib\martgamelib\obj\Debug\net6.0\ref\martgamelib.dll
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\bin\Debug\net6.0\csfml-Audio.dll
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\bin\Debug\net6.0\csfml-Graphics.dll
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\bin\Debug\net6.0\csfml-System.dll
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\bin\Debug\net6.0\csfml-Window.dll
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\bin\Debug\net6.0\openal32.dll
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\bin\Debug\net6.0\martgamelib.deps.json
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\bin\Debug\net6.0\martgamelib.dll
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\bin\Debug\net6.0\martgamelib.pdb
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\bin\Debug\net6.0\martlib.dll
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\bin\Debug\net6.0\martlib.pdb
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\obj\Debug\net6.0\martgamelib.csproj.AssemblyReference.cache
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\obj\Debug\net6.0\martgamelib.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\obj\Debug\net6.0\martgamelib.AssemblyInfoInputs.cache
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\obj\Debug\net6.0\martgamelib.AssemblyInfo.cs
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\obj\Debug\net6.0\martgamelib.csproj.CoreCompileInputs.cache
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\obj\Debug\net6.0\martgamelib.csproj.CopyComplete
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\obj\Debug\net6.0\martgamelib.dll
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\obj\Debug\net6.0\refint\martgamelib.dll
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\obj\Debug\net6.0\martgamelib.pdb
+C:\Users\harry\Desktop\the stuff\PROJECTS\martlibs\martgamelib\martgamelib\obj\Debug\net6.0\ref\martgamelib.dll

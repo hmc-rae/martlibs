@@ -13,6 +13,17 @@ namespace martgamelib
         internal RenderTexture target;
         internal Sprite sprite;
 
+        public RenderLayer() 
+        { 
+            
+        }
+        public RenderLayer(Vector size, int layerID)
+        {
+            pixelRadius = size / 2;
+            this.layerID = layerID;
+            PixelScale = Vector.XY;
+        }
+
         public int LayerID => layerID;
         /// <summary>
         /// The dimensions of the target in pixels.

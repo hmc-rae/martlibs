@@ -43,7 +43,7 @@ namespace martgamelib
             }
             return null;
         }
-        internal void RegisterRenderLayer(RenderLayer layer)
+        public void RegisterRenderLayer(RenderLayer layer)
         {
             layer.scene = this;
             layer.Create();
@@ -130,6 +130,7 @@ namespace martgamelib
 
             rems = new int[poolSize];
             remspos = 0;
+            cameras = new List<CameraEntry>();
         }
 
         internal void StartFrame()
@@ -147,7 +148,7 @@ namespace martgamelib
         internal void EndFrame()
         {
             //Step 1 - Cycle backwards through rems, removing all that you encounter.
-            for (uint i = remspos - 1; i >= 0; i--)
+            for (uint i = remspos - 1; i >= 0 && i < rems.Length; i--)
             {
                 objectPool.Remove(rems[i]);
             }

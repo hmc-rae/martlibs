@@ -34,6 +34,16 @@ namespace martgamelib
         [MonSerializer.MonInclude]
         internal int layID;
 
+        public CameraComponent()
+        {
+
+        }
+        public CameraComponent(int CameraID, int LayerID)
+        {
+            this.layID = LayerID;
+            this.camID = CameraID;
+        }
+
         internal RenderLayer? target; 
         public bool CanRender
         {
