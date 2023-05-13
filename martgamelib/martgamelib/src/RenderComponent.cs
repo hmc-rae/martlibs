@@ -84,7 +84,7 @@ namespace martgamelib
 
             spr.Scale = martgame.ToSFMLVector(parent.Transform.Scale);
             spr.Position = martgame.ToSFMLVector(relative);
-            spr.Rotation = (float)(parent.Transform.Rotation.Degrees + RenderCamera.Parent.Transform.Rotation.Flip.Degrees);
+            spr.Rotation = (float)(parent.Transform.Rotation.Flip.Degrees + RenderCamera.Parent.Transform.Rotation.Degrees);
 
             RenderCamera.Render(spr);
         }
@@ -124,7 +124,7 @@ namespace martgamelib
 
             _shape.Scale = martgame.ToSFMLVector(parent.Transform.Scale);
             _shape.Position = martgame.ToSFMLVector(relative);
-            _shape.Rotation = (float)(parent.Transform.Rotation.Degrees + RenderCamera.Parent.Transform.Rotation.Degrees);
+            _shape.Rotation = (float)(parent.Transform.Rotation.Flip.Degrees + RenderCamera.Parent.Transform.Rotation.Degrees);
             _shape.FillColor = color;
 
             RenderCamera.Render(_shape);

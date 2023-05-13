@@ -7,14 +7,13 @@ namespace martgamelib
     public class InputManager
     {
         //keyboard
-        private bool[] mKeys;
-        private int[] mKeyQueue;
-        private int mKeyQueueDepth;
+        private const int KEYCOUNT = 128;
+        private KeyRegister[] mKeyRegister;
+
 
         //mouse
-        private bool[] mMouse;
-        private int[] mMouseQueue;
-        private int mMouseQueueDepth;
+        private const int MOUSECOUNT = 256;
+        private KeyRegister[] mMouseRegister;
 
 
         private Vector mPos;
@@ -23,14 +22,19 @@ namespace martgamelib
         public InputManager()
         {
             //keyboard
-            mKeys = new bool[512];
-            mKeyQueue = new int[512];
-            mKeyQueueDepth = 0;
+            mKeyRegister = new KeyRegister[KEYCOUNT];
+            for (int i = 0; i < KEYCOUNT; i++)
+            {
+                mKeyRegister[i] = new KeyRegister();
+            }
+
 
             //mouse
-            mMouse = new bool[16];
-            mMouseQueueDepth = 0;
-            mMouseQueue = new int[16];
+            mMouseRegister = new KeyRegister[MOUSECOUNT];
+            for (int i = 0; i < MOUSECOUNT; i++)
+            {
+                mMouseRegister[i] = new KeyRegister();
+            }
 
             //misc
             mPos = new Vector();
@@ -52,51 +56,56 @@ namespace martgamelib
         }
 
         /// <summary>
-        /// call this pre-frame
+        /// call this pre-tick
         /// </summary>
         protected internal void prepoll()
         {
-            for (int i = 0; i < mKeyQueueDepth; i++)
-                mKeys[mKeyQueue[i] + 1] = mKeys[mKeyQueue[i]];
+            for (int i = 0; i < KEYCOUNT; i++)
+            {
+                mKeyRegister[i].patch();
+            }
 
-            for (int i = 0; i < mMouseQueueDepth; i++)
-                mMouse[mMouseQueue[i] + 1] = mMouse[mMouseQueue[i]];
-
-            mMouseQueueDepth = mKeyQueueDepth = 0;
+            for (int i = 0; i < MOUSECOUNT; i++)
+            {
+                mMouseRegister[i].patch();
+            }
             mWheelDelta = 0;
         }
 
         //keyboard
         internal void OnPress(object? sender, KeyEventArgs e)
         {
-            int n = (int)e.Code << 1;
-            if (n < 0 || n >= mKeys.Length) return; //safety :thumbsup:
-            mKeys[n] = true;
-            mKeyQueue[mKeyQueueDepth++] = n;
+            int n = (int)e.Code;
+            if (n < 0 || n >= KEYCOUNT) return; //safety :thumbsup:
+
+            mKeyRegister[n].hasPressed = true;
+            mKeyRegister[n].hasHeld = true;
         }
         internal void OnRelease(object? sender, KeyEventArgs e)
         {
-            int n = (int)e.Code << 1;
-            if (n < 0 || n >= mKeys.Length) return; //safety :thumbsup:
+            int n = (int)e.Code;
+            if (n < 0 || n >= KEYCOUNT) return; //safety :thumbsup:
 
-            mKeys[n] = false;
-            mKeyQueue[mKeyQueueDepth++] = n;
+            mKeyRegister[n].hasReleased = true;
+            mKeyRegister[n].hasHeld = false;
         }
 
         //mouse
         internal void OnMousePress(object? sender, MouseButtonEventArgs e)
         {
-            int n = (int)e.Button << 1;
-            if (n < 0 || n >= mKeys.Length) return; //safety :thumbsup:
-            mMouse[n] = true;
-            mMouseQueue[mMouseQueueDepth++] = n;
+            int n = (int)e.Button;
+            if (n < 0 || n >= MOUSECOUNT) return; //safety :thumbsup:
+
+            mMouseRegister[n].hasPressed = true;
+            mMouseRegister[n].hasHeld = true;
         }
         internal void OnMouseRelease(object? sender, MouseButtonEventArgs e)
         {
-            int n = (int)e.Button << 1;
-            if (n < 0 || n >= mKeys.Length) return; //safety :thumbsup:
-            mMouse[n] = false;
-            mMouseQueue[mMouseQueueDepth++] = n;
+            int n = (int)e.Button;
+            if (n < 0 || n >= MOUSECOUNT) return; //safety :thumbsup:
+
+            mMouseRegister[n].hasReleased = true;
+            mMouseRegister[n].hasHeld = false;
         }
 
         //mouse scroll
@@ -133,125 +142,271 @@ namespace martgamelib
             get { return mWheelDelta; }
         }
 
+
+
         /// <summary>
         /// Returns true if the key has just been pressed.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public bool KeyPressed(Keyboard.Key key)
+        public bool KeyPressedBool(Keyboard.Key key)
         {
-            int n = (int)key * 2;
-            if (n < 0 || n >= mKeys.Length) return false;
+            int n = (int)key;
+            if (n < 0 || n >= KEYCOUNT) return false;
 
-            return mKeys[n] && !mKeys[n + 1];
+            return mKeyRegister[n].pressed;
         }
+        /// <summary>
+        /// Returns 1 if the key has just been pressed, 0 otherwise.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public int KeyPressed(Keyboard.Key key)
+        {
+            int n = (int)key;
+            if (n < 0 || n >= KEYCOUNT) return 0;
+
+            return mKeyRegister[n].pressed ? 1 : 0;
+        }
+
+
 
         /// <summary>
         /// Returns true if the key has been released over the last frame.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public bool KeyReleased(Keyboard.Key key)
+        public bool KeyReleasedBool(Keyboard.Key key)
         {
-            int n = (int)key * 2;
-            if (n < 0 || n >= mKeys.Length) return false;
+            int n = (int)key;
+            if (n < 0 || n >= KEYCOUNT) return false;
 
-            return !mKeys[n] && mKeys[n + 1];
+            return mKeyRegister[n].released;
         }
+        /// <summary>
+        /// Returns 1 if the key has been released over the last frame, 0 otherwise.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public int KeyReleased(Keyboard.Key key)
+        {
+            int n = (int)key;
+            if (n < 0 || n >= KEYCOUNT) return 0;
+
+            return mKeyRegister[n].released ? 1 : 0;
+        }
+
+
 
         /// <summary>
         /// Returns true if the key has been held for more than one frame.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public bool KeyHeld(Keyboard.Key key)
+        public bool KeyHeldBool(Keyboard.Key key)
         {
-            int n = (int)key * 2;
-            if (n < 0 || n >= mKeys.Length) return false;
+            int n = (int)key;
+            if (n < 0 || n >= KEYCOUNT) return false;
 
-            return mKeys[n] && mKeys[n + 1];
+            return mKeyRegister[n].held;
         }
+        /// <summary>
+        /// Returns 1 if the key is held down, 0 otherwise.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public int KeyHeld(Keyboard.Key key)
+        {
+            int n = (int)key;
+            if (n < 0 || n >= KEYCOUNT) return 0;
+
+            return mKeyRegister[n].held ? 1 : 0;
+        }
+
+
 
         /// <summary>
         /// Returns true if the key is pressed down, whether that be held or tapped.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public bool Key(Keyboard.Key key)
+        public bool KeyBool(Keyboard.Key key)
         {
-            int n = (int)key * 2;
-            if (n < 0 || n >= mKeys.Length) return false;
+            int n = (int)key;
+            if (n < 0 || n >= KEYCOUNT) return false;
 
-            return mKeys[n];
+            return mKeyRegister[n].pressed || mKeyRegister[n].held;
         }
+        /// <summary>
+        /// Returns 1 if the key is pressed down, whether that be held or tapped, 0 otherwise.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public int Key(Keyboard.Key key)
+        {
+            int n = (int)key;
+            if (n < 0 || n >= KEYCOUNT) return 0;
+
+            return (mKeyRegister[n].pressed || mKeyRegister[n].held) ? 1 : 0;
+        }
+
+
+
+        /// <summary>
+        /// Returns 1 if a is held, -1 if b is held, and 0 otherwise.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public int KeyDelta(Keyboard.Key a, Keyboard.Key b)
+        {
+            return Key(a) - Key(b);
+        }
+
+
 
         /// <summary>
         /// Returns true if the mouse button has just been pressed.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public bool MouseClicked(Mouse.Button key)
+        public bool MouseClickedBool(Mouse.Button key)
         {
-            int n = (int)key * 2;
-            if (n < 0 || n >= mMouse.Length) return false;
+            int n = (int)key;
+            if (n < 0 || n >= MOUSECOUNT) return false;
 
-            return mMouse[n] && !mMouse[n + 1];
+            return mMouseRegister[n].pressed;
         }
+        /// <summary>
+        /// Returns 1 if the mouse button has just been pressed, 0 otherwise.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public int MouseClicked(Mouse.Button key)
+        {
+            int n = (int)key;
+            if (n < 0 || n >= MOUSECOUNT) return 0;
+
+            return mMouseRegister[n].pressed ? 1 : 0;
+        }
+
+
         /// <summary>
         /// Returns true if the mouse button has been released over the last frame.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public bool MouseReleased(Mouse.Button key)
+        public bool MouseReleasedBool(Mouse.Button key)
         {
-            int n = (int)key * 2;
-            if (n < 0 || n >= mMouse.Length) return false;
+            int n = (int)key;
+            if (n < 0 || n >= MOUSECOUNT) return false;
 
-            return !mMouse[n] && mMouse[n + 1];
+            return mMouseRegister[n].released;
+        }
+        /// <summary>
+         /// Returns true if the mouse button has been released over the last frame.
+         /// </summary>
+         /// <param name="key"></param>
+         /// <returns></returns>
+        public int MouseReleased(Mouse.Button key)
+        {
+            int n = (int)key;
+            if (n < 0 || n >= MOUSECOUNT) return 0;
+
+            return mMouseRegister[n].released ? 1 : 0;
+        }
+
+
+
+        /// <summary>
+        /// Returns true if the mouse button has been held for more than one frame.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool MouseHeldBool(Mouse.Button key)
+        {
+            int n = (int)key;
+            if (n < 0 || n >= MOUSECOUNT) return false;
+
+            return mMouseRegister[n].held;
         }
         /// <summary>
         /// Returns true if the mouse button has been held for more than one frame.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public bool MouseHeld(Mouse.Button key)
+        public int MouseHeld(Mouse.Button key)
         {
-            int n = (int)key * 2;
-            if (n < 0 || n >= mMouse.Length) return false;
+            int n = (int)key;
+            if (n < 0 || n >= MOUSECOUNT) return 0;
 
-            return mMouse[n] && mMouse[n + 1];
+            return mMouseRegister[n].held ? 1 : 0;
+        }
+
+
+
+        /// <summary>
+        /// Returns true if the mouse button is pressed down, whether it be held or tapped.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool MouseBool(Mouse.Button key)
+        {
+            int n = (int)key;
+            if (n < 0 || n >= MOUSECOUNT) return false;
+
+            return mMouseRegister[n].pressed || mMouseRegister[n].held;
         }
         /// <summary>
         /// Returns true if the mouse button is pressed down, whether it be held or tapped.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public bool Mouse(Mouse.Button key)
+        public int Mouse(Mouse.Button key)
         {
-            int n = (int)key * 2;
-            if (n < 0 || n >= mMouse.Length) return false;
+            int n = (int)key;
+            if (n < 0 || n >= MOUSECOUNT) return 0;
 
-            return mMouse[n];
+            return mMouseRegister[n].pressed || mMouseRegister[n].held ? 1 : 0;
+        }
+
+
+
+        /// <summary>
+        /// Returns 1 if a is held, -1 if b is held, and 0 otherwise.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public int MouseDelta(Mouse.Button a, Mouse.Button b)
+        {
+            return Mouse(a) - Mouse(b);
         }
     }
 
-    public struct KeyRegister
+    internal struct KeyRegister
     {
-        public readonly char Key;
-
         internal bool hasPressed;
+        internal bool hasHeld;
         internal bool hasReleased;
 
-        private bool pressed;
-        private bool held;
-        private bool released;
+        internal bool pressed;
+        internal bool held;
+        internal bool released;
 
-        public KeyRegister(char k)
+        public KeyRegister()
         {
-            Key = k;
+            hasPressed = hasHeld = hasReleased = false;
+            pressed = held = released = false;
+        }
+
+        internal void patch()
+        {
+            pressed = hasPressed;
+            held = hasHeld;
+            released = hasReleased;
 
             hasPressed = hasReleased = false;
-            pressed = held = released = false;
         }
     }
 }

@@ -14,6 +14,7 @@ namespace martgamelib
 {
     public class martgame
     {
+        public const string VERSION = "0.1.1";
         internal static Vector2f ToSFMLVector(Vector vector)
         {
             return new Vector2f((float)vector.X, (float)vector.Y);
@@ -160,7 +161,6 @@ namespace martgamelib
             while (window.IsOpen)
             {
                 window.StartFrame();
-                window.DispatchEvents();
 
                 //If not decoupled, do all the game logic here.
                 if (!DecoupleRender)
