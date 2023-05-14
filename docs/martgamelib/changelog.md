@@ -22,3 +22,8 @@ By hmc-rae.
 			- The above points apply to mouse buttons too.
 		- Fixed rotation & rendering
 			- Rotations would appear inversely to how they actually are, according to a unit vector.
+	- 0.1.2
+		- InputManager now properly reports movement of the mouse on the screen
+		- CameraComponents now can translate a vector representing a 'real' position on the screen to a position relative to themselves within their MapRegion via `GetRelativeMousePosition`.
+		- CameraComponents can now set the size of their MapRegion through `SetUnitsPerPixel`.
+		- New functions `AwaitTick` and `AwaitFrame` added to BehaviorComponent: now, objects can wait for another object to either complete or start execution of their tick/frame behaviors.

@@ -78,6 +78,11 @@ namespace martgamelib
         {
             return pos.Absolute < DetectRegion;
         }
+        /// <summary>
+        /// Returns the position passed relative to the map region, where (1, 1) is the top right corner of the mapped region.
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <returns></returns>
         public Vector GetMappedPosition(Vector pos)
         {
             if (!CanRender) return Vector.UNIT_X;
@@ -87,6 +92,51 @@ namespace martgamelib
             pos = pos.Flip;
             pos += target.PixelRadius;
             return pos;
+        }
+        /// <summary>
+        /// Sets the MapRegion of this camera to the number of 'units' that exist on the target this camera holds.
+        /// <br></br>
+        /// Sets the DetectRegion to MapRegion + DetectDelta
+        /// </summary>
+        /// <param name="UPP"></param>
+        /// <param name="DetectDelta"></param>
+        public void SetUnitsPerPixel(Vector UPP, Vector DetectDelta)
+        {
+            if (!CanRender) return;
+            Vector screenSize = target.PixelSize;
+
+            MapRegion = screenSize / UPP;
+            DetectRegion = MapRegion + DetectDelta;
+        }
+        /// <summary>
+        /// Maps a MousePosition vector (ideally provided by the InputManager - a vector representing some real point on the screen) to an abstract position relative to this camera, based on what the camera can see.
+        /// </summary>
+        /// <param name="MousePosition"></param>
+        /// <returns></returns>
+        public Vector GetRelativeMousePosition(Vector MousePosition)
+        {
+            if (!CanRender) return MousePosition;
+
+            //step 1: get the vector origin of the target
+            Console.WriteLine($"POS: {target.MainWindowPosition}");
+            Vector tOrig = target.MainWindowPosition;
+
+            //2: relative to orig
+            MousePosition -= tOrig;
+
+            //3: scaled relative to orig
+            MousePosition /= target.PixelScale;
+
+            //4: -1 <= v <= 1 on targ
+            MousePosition /= target.PixelRadius;
+
+            //5: Mult by camera mapreg
+            MousePosition *= MapRegion;
+
+            //6: Rotate by hruiahui
+            MousePosition ^= Parent.Transform.Rotation.Flip;
+
+            return MousePosition;
         }
 
         public void Render(Drawable obj)

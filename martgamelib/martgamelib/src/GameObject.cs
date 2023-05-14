@@ -13,6 +13,10 @@ namespace martgamelib
     {
         internal uint objid;
         internal bool destroy;
+        internal object updatelock = new object();
+        internal bool updateflip = false;
+        internal object framelock = new object();
+        internal bool frameflip = false;
 
         //private stuff that cannot be edited but has public gets
 #pragma warning disable IDE0079 // Remove unnecessary suppression

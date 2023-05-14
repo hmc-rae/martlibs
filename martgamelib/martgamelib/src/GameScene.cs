@@ -14,6 +14,34 @@ namespace martgamelib
         private DistributorPool distributorPool;
         private Runtimer fTime, tTime;
 
+        internal bool updateflip = false;
+        internal bool frameflip = false;
+
+        public uint EntityCount
+        {
+            get
+            {
+                return objectPool.OccupiedSize + tempPool.OccupiedSize;
+            }
+        }
+        /// <summary>
+        /// gets the gameobject at position i
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        internal GameObject get(uint i)
+        {
+            if (i < objectPool.OccupiedSize)
+            {
+                return objectPool.Get((int)i);
+            }
+            else
+            {
+                i -= objectPool.OccupiedSize;
+                return tempPool.Get((int)i);
+            }
+        }
+
         internal bool ChangeScene = false;
         internal GameScene? nextScene;
 
@@ -139,6 +167,8 @@ namespace martgamelib
         {
             input.prepoll();
             window.DispatchEvents();
+
+            updateflip = !updateflip;
             distributorPool.Start();
         }
 
@@ -168,6 +198,7 @@ namespace martgamelib
                 if (obj == null) break;
                 obj.create();
                 objectPool.Add(obj);
+                obj.updateflip = updateflip;
             }
             tempPool.Flush();
             tempPool.PurgeUnused();
@@ -177,7 +208,12 @@ namespace martgamelib
         {
             for (int i = 0; i < objectPool.OccupiedSize; i++)
             {
-                objectPool.Get(i).render();
+                GameObject obj = objectPool.Get(i);
+
+                if (obj.frameflip == frameflip) continue;
+
+                obj.frameflip = frameflip;
+                obj.render();
             }
         }
 
@@ -196,6 +232,7 @@ namespace martgamelib
             tempPool.Add(obj);
             obj.Alive = false;
 
+            obj.updateflip = updateflip;
             return obj;
         }
         public GameObject Instantiate(Transform origin)
@@ -211,6 +248,7 @@ namespace martgamelib
             tempPool.Add(obj);
             obj.Alive = false;
 
+            obj.updateflip = updateflip;
             return obj;
         }
         public GameObject Instantiate(Prefab prefab)
@@ -228,6 +266,7 @@ namespace martgamelib
             prefab.Attach(obj);
             obj.Alive = false;
 
+            obj.updateflip = updateflip;
             return obj;
         }
         public GameObject Instantiate(Prefab prefab, Transform origin)
@@ -247,6 +286,7 @@ namespace martgamelib
             obj.Transform = origin;
             obj.Alive = false;
 
+            obj.updateflip = updateflip;
             return obj;
         }
 
@@ -266,6 +306,7 @@ namespace martgamelib
 
             obj.Alive = true;
 
+            obj.updateflip = !updateflip;
             return obj;
         }
         public GameObject InstantiateUrgent(Transform origin)
@@ -282,7 +323,8 @@ namespace martgamelib
 
             obj.freshMade = false;
             obj.Alive = true;
-
+            
+            obj.updateflip = !updateflip;
             return obj;
         }
         public GameObject InstantiateUrgent(Prefab prefab)
@@ -302,6 +344,7 @@ namespace martgamelib
             prefab.Attach(obj);
             obj.Alive = true;
 
+            obj.updateflip = !updateflip;
             return obj;
         }
         public GameObject InstantiateUrgent(Prefab prefab, Transform origin)
@@ -321,6 +364,7 @@ namespace martgamelib
             prefab.Attach(obj);
             obj.Alive = true;
 
+            obj.updateflip = !updateflip;
             return obj;
         }
 
@@ -332,10 +376,11 @@ namespace martgamelib
         /// <returns></returns>
         public GameObject? Find(string tag)
         {
-            for (int i = 0; i < objectPool.OccupiedSize; i++)
+            for (uint i = 0; i < EntityCount; i++)
             {
-                if (objectPool.Get(i).Tag == tag)
-                    return objectPool.Get(i);
+                GameObject obj = get(i);
+                if (obj.Tag == tag)
+                    return obj;
             }
             return null;
         }
@@ -347,17 +392,18 @@ namespace martgamelib
         public GameObject[] FindAll(string tag)
         {
             int c = 0;
-            for (int i = 0; i < objectPool.OccupiedSize; i++)
+            for (uint i = 0; i < EntityCount; i++)
             {
-                if (objectPool.Get(i).Tag == tag)
+                if (get(i).Tag == tag)
                     c++;
             }
 
             GameObject[] lis = new GameObject[c];
-            for (int i = 0, k = 0; i < objectPool.OccupiedSize && k < c; i++)
+            for (uint i = 0, k = 0; i < EntityCount && k < c; i++)
             {
-                if (objectPool.Get(i).Tag == tag)
-                    lis[k++] = objectPool.Get(i);
+                GameObject obj = get(i);
+                if (obj.Tag == tag)
+                    lis[k++] = obj;
             }
             return lis;
         }
@@ -370,17 +416,18 @@ namespace martgamelib
         /// <returns></returns>
         public GameObject? Find(FlagStruct flags, bool exactMatch)
         {
-            for (int i = 0; i < objectPool.OccupiedSize; i++)
+            for (uint i = 0; i < EntityCount; i++)
             {
+                GameObject obj = get(i);
                 if (exactMatch)
                 {
-                    if (objectPool.Get(i).Flags == flags)
-                        return objectPool.Get(i);
+                    if (obj.Flags == flags)
+                        return obj;
                 }
                 else
                 {
-                    if (objectPool.Get(i).Flags.Has(flags))
-                        return objectPool.Get(i);
+                    if (obj.Flags.Has(flags))
+                        return obj;
                 }
             }
             return null;
@@ -394,32 +441,34 @@ namespace martgamelib
         public GameObject[] FindAll(FlagStruct flags, bool exactMatch)
         {
             int c = 0;
-            for (int i = 0; i < objectPool.OccupiedSize; i++)
+            for (uint i = 0; i < EntityCount; i++)
             {
+                GameObject obj = get(i);
                 if (exactMatch)
                 {
-                    if (objectPool.Get(i).Flags == flags)
+                    if (obj.Flags == flags)
                         c++;
                 }
                 else
                 {
-                    if (objectPool.Get(i).Flags.Has(flags))
+                    if (obj.Flags.Has(flags))
                         c++;
                 }
             }
 
             GameObject[] lis = new GameObject[c];
-            for (int i = 0, k = 0; i < objectPool.OccupiedSize && k < c; i++)
+            for (uint i = 0, k = 0; i < EntityCount && k < c; i++)
             {
+                GameObject obj = get(i);
                 if (exactMatch)
                 {
-                    if (objectPool.Get(i).Flags == flags)
-                        lis[k++] = objectPool.Get(i);
+                    if (obj.Flags == flags)
+                        lis[k++] = obj;
                 }
                 else
                 {
-                    if (objectPool.Get(i).Flags.Has(flags))
-                        lis[k++] = objectPool.Get(i);
+                    if (obj.Flags.Has(flags))
+                        lis[k++] = obj;
                 }
             }
             return lis;
@@ -504,7 +553,18 @@ namespace communistOverhaul
 
         protected override void ProcessObject(GameObject? obj)
         {
-            if (obj != null && !obj.destroy && obj.Alive)
+            if (obj == null) return;
+
+            lock (obj.updatelock)
+            {
+                if (obj.updateflip == obj.scene.updateflip)
+                {
+                    return;
+                }
+                obj.updateflip = obj.scene.updateflip;
+            }
+
+            if (!obj.destroy && obj.Alive)
             {
                 obj.behavior();
             }

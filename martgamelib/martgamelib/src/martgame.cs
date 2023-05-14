@@ -14,7 +14,7 @@ namespace martgamelib
 {
     public class martgame
     {
-        public const string VERSION = "0.1.1";
+        public const string VERSION = "0.1.2";
         internal static Vector2f ToSFMLVector(Vector vector)
         {
             return new Vector2f((float)vector.X, (float)vector.Y);
@@ -161,6 +161,7 @@ namespace martgamelib
             while (window.IsOpen)
             {
                 window.StartFrame();
+                scene.frameflip = !scene.frameflip;
 
                 //If not decoupled, do all the game logic here.
                 if (!DecoupleRender)
@@ -234,8 +235,8 @@ namespace martgamelib
             public PathingDetails()
             {
                 //The two files for reading where animations are located.
-                texPath = $"{Directory.GetCurrentDirectory()}\\Assets\\YellowPages\\TextureDirectory.bin";
-                entPath = $"{Directory.GetCurrentDirectory()}\\Assets\\YellowPages\\EntityAnimations.bin";
+                texPath = $"{Directory.GetCurrentDirectory()}\\Assets\\TextureDirectory.bin";
+                entPath = $"{Directory.GetCurrentDirectory()}\\Assets\\EntityAnimations.bin";
 
                 //Library pointing to all the user-defined code
                 libsPath = $"{Directory.GetCurrentDirectory()}\\Assets\\Scripts";

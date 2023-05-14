@@ -52,6 +52,8 @@ namespace martgamelib
 
             window.MouseWheelScrolled += OnMouseScroll;
 
+            window.MouseMoved += OnMouseMove;
+
             window.Closed += OnClose;
         }
 
@@ -128,7 +130,8 @@ namespace martgamelib
 
         //publicly visible stuff
         /// <summary>
-        /// The current position of the mouse cursor.
+        /// The current position of the mouse cursor relative to the screen actual. <br></br>
+        /// To get the position relative to some camera (adjusted), use the respective function in Camera.
         /// </summary>
         public Vector MousePosition
         {

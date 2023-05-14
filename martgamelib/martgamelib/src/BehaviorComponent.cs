@@ -145,5 +145,48 @@ namespace martgamelib
         {
             return Scene.InstantiateUrgent(prefab, origin);
         }
+
+        /// <summary>
+        /// Ensures that object a has either completed or started its tick activities. <br></br>
+        /// Returns 'true' if object a has completed its activities, false if object a has at least started.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <returns></returns>
+        public bool AwaitTick(GameObject a)
+        {
+            if (a == null) return false;
+
+            lock (a.updatelock)
+            {
+                if (a.updateflip == a.scene.updateflip)
+                {
+                    return false;
+                }
+                a.updateflip = a.scene.updateflip;
+            }
+
+            if (!a.destroy && a.Alive)
+            {
+                a.behavior();
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Ensures that object a has either completed or started its frame activities. <br></br>
+        /// Returns 'true' if object a has completed its activities.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <returns></returns>
+        public bool AwaitFrame(GameObject a)
+        {
+            if (a == null) return false;
+
+            if (a.frameflip == a.scene.frameflip) return true;
+            a.frameflip = a.scene.frameflip;
+
+            a.render();
+            return true;
+        }
     }
 }
