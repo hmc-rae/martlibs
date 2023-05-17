@@ -14,7 +14,7 @@ namespace martgamelib
 {
     public class martgame
     {
-        public const string VERSION = "0.1.2";
+        public const string VERSION = "0.1.3";
         internal static Vector2f ToSFMLVector(Vector vector)
         {
             return new Vector2f((float)vector.X, (float)vector.Y);

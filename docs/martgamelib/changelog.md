@@ -27,3 +27,9 @@ By hmc-rae.
 		- CameraComponents now can translate a vector representing a 'real' position on the screen to a position relative to themselves within their MapRegion via `GetRelativeMousePosition`.
 		- CameraComponents can now set the size of their MapRegion through `SetUnitsPerPixel`.
 		- New functions `AwaitTick` and `AwaitFrame` added to BehaviorComponent: now, objects can wait for another object to either complete or start execution of their tick/frame behaviors.
+	- 0.1.3
+		- Added new rendercomponent: TextRenderer, which can display text on the screen.
+		- Added new method to CameraComponent: `GetRealMousePosition`, which gets the mouse position adjusted through their lens to the 'real' space of the game scene.
+		- `CameraComponent.GetRelativeMousePosition` now returns the mouse position adjusted purely to the camera.
+		- BehaviorComponent has a new method, `Destroy(BehaviorComponent)` and `Destroy(GameObject)`, which will flag a game object to be deleted at EoF.
+		- Prefabs can now be generated via `Prefab.GeneratePrefab(GameObject, string)`

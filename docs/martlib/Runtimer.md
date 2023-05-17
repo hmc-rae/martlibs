@@ -13,6 +13,8 @@ By hmc-rae
 		- 1.0.1
 			- LastFrameRate, a measure of the estimated framerate as per last frame performance, added
 			- FrameRate can be accessed & changed.
+		- 1.0.2
+			- `Wait()` now doesn't rely on `Thread.Sleep()` which produces innaccuracies
 
 ## Usage
 

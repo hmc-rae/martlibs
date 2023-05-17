@@ -57,6 +57,34 @@ namespace martgamelib
 
             return 0;
         }
+
+        /// <summary>
+        /// Generates a prefab of the given object underneath the name
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="prefabName"></param>
+        /// <returns></returns>
+        public Prefab GeneratePrefab(GameObject obj, string prefabName)
+        {
+            Prefab temp = new Prefab();
+
+            temp.PrefabName = prefabName;
+            temp.flags = obj.Flags;
+            temp.transform = obj.Transform;
+
+            temp.components = new Prefab.ComponentFab[obj.componentCount];
+            for (int i = 0; i < temp.components.Length; i++)
+            {
+                temp.components[i] = new Prefab.ComponentFab();
+                temp.components[i].ComponentType = obj.components[i].GetType().ToString();
+                temp.components[i].ComponentMON = MonSerializer.Serialize(obj.components[i]);
+            }
+
+            Prefabs.Add(temp);
+            temp.Construct();
+
+            return temp;
+        }
     }
     public class Prefab
     {

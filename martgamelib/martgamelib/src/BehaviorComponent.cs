@@ -188,5 +188,24 @@ namespace martgamelib
             a.render();
             return true;
         }
+
+        /// <summary>
+        /// Slates a game object to be destroyed.
+        /// </summary>
+        /// <param name="a"></param>
+        public void Destroy(GameObject a)
+        {
+            a.destroy = true;
+            a.Alive = false;
+        }
+        /// <summary>
+        /// Slates the parent of the given behavior component to be destroyed.
+        /// </summary>
+        /// <param name="a"></param>
+        public void Destroy(BehaviorComponent a)
+        {
+            a.parent.destroy = true;
+            a.parent.Alive = false;
+        }
     }
 }

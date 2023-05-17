@@ -106,8 +106,6 @@ namespace martgamelib
         [MonSerializer.MonInclude]
         public Color color;
 
-        double counter = 0;
-
         public override void OnCreate()
         {
             base.OnCreate();
@@ -128,6 +126,123 @@ namespace martgamelib
             _shape.FillColor = color;
 
             RenderCamera.Render(_shape);
+
+        }
+    }
+    public class TextRenderer : RenderComponent
+    {
+        internal Text _text = new Text();
+        internal Font font;
+
+        public string FontPath
+        {
+            get
+            {
+                return fontPath;
+            }
+            set
+            {
+                fontPath = value;
+                font = new Font(value);
+            }
+        }
+        [MonSerializer.MonInclude]
+        internal string fontPath;
+
+        public Vector Origin
+        {
+            get
+            {
+                return origin;
+            }
+            set
+            {
+                origin = value;
+                FloatRect bounds = _text.GetLocalBounds();
+                _text.Origin = new SFML.System.Vector2f(bounds.Left + ((float)origin.X * bounds.Width), bounds.Top + ((float)origin.Y * bounds.Height));
+            }
+        }
+        [MonSerializer.MonInclude]
+        internal Vector origin;
+
+        public uint CharacterSize
+        {
+            get
+            {
+                return characterSize;
+            }
+            set
+            {
+                characterSize = value;
+                _text.CharacterSize = characterSize;
+                Origin = origin;
+            }
+        }
+        [MonSerializer.MonInclude]
+        internal uint characterSize = 30;
+
+        public string DisplayedString
+        {
+            get
+            {
+                return text;
+            }
+            set
+            {
+                text = value;
+                _text.DisplayedString = text;
+                Origin = origin;
+            }
+        }
+        [MonSerializer.MonInclude]
+        internal string text;
+
+        public Color Color
+        {
+            get
+            {
+                return color;
+            }
+            set
+            {
+                color = value;
+                _text.FillColor = color;
+            }
+        }
+        [MonSerializer.MonInclude]
+        internal Color color;
+
+        public override void OnCreate()
+        {
+            base.OnCreate();
+
+            font = new Font(fontPath);
+            _text = new Text("", font);
+
+            _text.FillColor = color;
+
+            _text.DisplayedString = text;
+
+            _text.CharacterSize = characterSize;
+
+            Origin = origin;
+        }
+
+        public override void Render()
+        {
+            if (!CanRender()) return;
+
+            Vector relative = RenderCamera.GetRelativePosition(Parent);
+            if (!RenderCamera.IsVisible(relative)) return;
+
+            relative = RenderCamera.GetMappedPosition(relative);
+
+            _text.Scale = martgame.ToSFMLVector(parent.Transform.Scale);
+            _text.Position = martgame.ToSFMLVector(relative);
+            _text.Rotation = (float)(parent.Transform.Rotation.Flip.Degrees + RenderCamera.Parent.Transform.Rotation.Degrees);
+            _text.FillColor = color;
+
+            RenderCamera.Render(_text);
 
         }
     }

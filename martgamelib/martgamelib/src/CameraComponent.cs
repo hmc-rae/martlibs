@@ -118,7 +118,6 @@ namespace martgamelib
             if (!CanRender) return MousePosition;
 
             //step 1: get the vector origin of the target
-            Console.WriteLine($"POS: {target.MainWindowPosition}");
             Vector tOrig = target.MainWindowPosition;
 
             //2: relative to orig
@@ -133,10 +132,22 @@ namespace martgamelib
             //5: Mult by camera mapreg
             MousePosition *= MapRegion;
 
-            //6: Rotate by hruiahui
-            MousePosition ^= Parent.Transform.Rotation.Flip;
+            //6: Flip
+            MousePosition = MousePosition.Flip;
 
             return MousePosition;
+        }
+        public Vector GetRealMousePosition(Vector MousePosition)
+        {
+            MousePosition = GetRelativeMousePosition(MousePosition).Flip;
+
+            //6: Rotate by camera rotation
+            MousePosition ^= Parent.Transform.Rotation.Flip;
+
+            //7: Offset by camera natural position
+            MousePosition += Parent.Transform.Position.Flip;
+
+            return MousePosition.Flip;
         }
 
         public void Render(Drawable obj)

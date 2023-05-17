@@ -8,7 +8,7 @@ namespace martlib
     /// </summary>
     public class Runtimer
     {
-        public const string VERSION = "1.0.1";
+        public const string VERSION = "1.0.2";
 
         private const double CONV_VAL = 0.001;
 
@@ -34,11 +34,7 @@ namespace martlib
 
         public void Wait()
         {
-            if (timer.ElapsedMilliseconds < targetMS)
-            {
-                int time = (int)(targetMS - timer.ElapsedMilliseconds);
-                Thread.Sleep(time);
-            }
+            while (timer.ElapsedMilliseconds < targetMS) ;
             Restart();
         }
         public void Restart()
