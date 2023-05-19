@@ -207,5 +207,19 @@ namespace martgamelib
             a.parent.destroy = true;
             a.parent.Alive = false;
         }
+
+        /// <summary>
+        /// Enqueues a piece of code to be run when the object next 
+        /// </summary>
+        /// <param name="function"></param>
+        public void EnqueueFunction(Func<GameObject, int> function)
+        {
+
+        }
+        internal void ProcessFunctions()
+        {
+            for (int i = 0; i < )
+        }
+        internal Pool<Func<GameObject, int>> funcPool = new Pool<Func<GameObject, int>>(32); 
     }
 }

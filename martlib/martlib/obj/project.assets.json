@@ -8,19 +8,19 @@
     "net6.0": []
   },
   "packageFolders": {
-    "C:\\Users\\Harris\\.nuget\\packages\\": {}
+    "C:\\Users\\harry\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Files\\Programming\\Projects\\martlibs\\martlib\\martlib\\martlib.csproj",
+      "projectUniqueName": "C:\\Users\\harry\\Desktop\\the stuff\\PROJECTS\\martlibs\\martlib\\martlib\\martlib.csproj",
       "projectName": "martlib",
-      "projectPath": "D:\\Files\\Programming\\Projects\\martlibs\\martlib\\martlib\\martlib.csproj",
-      "packagesPath": "C:\\Users\\Harris\\.nuget\\packages\\",
-      "outputPath": "D:\\Files\\Programming\\Projects\\martlibs\\martlib\\martlib\\obj\\",
+      "projectPath": "C:\\Users\\harry\\Desktop\\the stuff\\PROJECTS\\martlibs\\martlib\\martlib\\martlib.csproj",
+      "packagesPath": "C:\\Users\\harry\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\harry\\Desktop\\the stuff\\PROJECTS\\martlibs\\martlib\\martlib\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Harris\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\harry\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -51,8 +51,7 @@
           "net47",
           "net471",
           "net472",
-          "net48",
-          "net481"
+          "net48"
         ],
         "assetTargetFallback": true,
         "warn": true,
@@ -61,7 +60,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.402\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.200\\RuntimeIdentifierGraph.json"
       }
     }
   }

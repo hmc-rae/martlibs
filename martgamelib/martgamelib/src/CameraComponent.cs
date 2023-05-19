@@ -86,6 +86,7 @@ namespace martgamelib
         public Vector GetMappedPosition(Vector pos)
         {
             if (!CanRender) return Vector.UNIT_X;
+            if (pos == Vector.ZERO) return Vector.ZERO + target.PixelRadius;
 
             pos /= MapRegion;
             pos *= target.PixelRadius;
@@ -100,13 +101,26 @@ namespace martgamelib
         /// </summary>
         /// <param name="UPP"></param>
         /// <param name="DetectDelta"></param>
-        public void SetUnitsPerPixel(Vector UPP, Vector DetectDelta)
+        public void SetPixelsPerUnit(Vector PPU, Vector DetectDelta)
         {
             if (!CanRender) return;
             Vector screenSize = target.PixelSize;
 
-            MapRegion = screenSize / UPP;
+            MapRegion = screenSize / PPU;
             DetectRegion = MapRegion + DetectDelta;
+        }
+
+        /// <summary>
+        /// Gets the number of pixels that exist in a single unit
+        /// </summary>
+        /// <returns></returns>
+        public Vector GetPixelsPerUnit()
+        {
+            if (!CanRender) return Vector.XY;
+
+            Vector screenSize = target.PixelSize;
+
+            return screenSize / MapRegion;
         }
         /// <summary>
         /// Maps a MousePosition vector (ideally provided by the InputManager - a vector representing some real point on the screen) to an abstract position relative to this camera, based on what the camera can see.

@@ -9,11 +9,13 @@ namespace martgamelib
 {
     public class RenderComponent : BehaviorComponent
     {
-        [JsonIgnore]
+        [MonSerializer.MonIgnore, EditorHidden]
         public CameraComponent RenderCamera;
         internal GameScene.CameraEntry camEntry;
-        [JsonInclude]
+
+        [MonSerializer.MonInclude, EditorVisible]
         internal int camID;
+        [EditorHidden]
         public int CameraID
         {
             get
@@ -51,11 +53,13 @@ namespace martgamelib
         [MonSerializer.MonInclude]
         public int EntityID;
 
-        [MonSerializer.MonIgnore]
+        [MonSerializer.MonIgnore, EditorHidden]
         public EntityEntry EntityAnimations;
-        [MonSerializer.MonIgnore]
+
+        [MonSerializer.MonIgnore, EditorVisible]
         public int AnimState, AnimFrame;
-        [MonSerializer.MonIgnore]
+
+        [MonSerializer.MonIgnore, EditorHidden]
         public bool CompletedAnim;
 
         public override void OnCreate()
@@ -100,7 +104,7 @@ namespace martgamelib
     }
     public class BoxRenderer : RenderComponent
     {
-        [MonSerializer.MonIgnore]
+        [MonSerializer.MonIgnore, EditorHidden]
         private static RectangleShape _shape = new RectangleShape(new SFML.System.Vector2f(1, 1));
 
         [MonSerializer.MonInclude]
@@ -134,6 +138,7 @@ namespace martgamelib
         internal Text _text = new Text();
         internal Font font;
 
+        [EditorHidden]
         public string FontPath
         {
             get
@@ -146,9 +151,10 @@ namespace martgamelib
                 font = new Font(value);
             }
         }
-        [MonSerializer.MonInclude]
+        [MonSerializer.MonInclude, EditorVisible]
         internal string fontPath;
 
+        [EditorHidden]
         public Vector Origin
         {
             get
@@ -162,9 +168,10 @@ namespace martgamelib
                 _text.Origin = new SFML.System.Vector2f(bounds.Left + ((float)origin.X * bounds.Width), bounds.Top + ((float)origin.Y * bounds.Height));
             }
         }
-        [MonSerializer.MonInclude]
+        [MonSerializer.MonInclude, EditorVisible]
         internal Vector origin;
 
+        [EditorHidden]
         public uint CharacterSize
         {
             get
@@ -178,9 +185,10 @@ namespace martgamelib
                 Origin = origin;
             }
         }
-        [MonSerializer.MonInclude]
+        [MonSerializer.MonInclude, EditorVisible]
         internal uint characterSize = 30;
 
+        [EditorHidden]
         public string DisplayedString
         {
             get
@@ -194,9 +202,10 @@ namespace martgamelib
                 Origin = origin;
             }
         }
-        [MonSerializer.MonInclude]
+        [MonSerializer.MonInclude, EditorVisible]
         internal string text;
 
+        [EditorHidden]
         public Color Color
         {
             get
@@ -209,7 +218,7 @@ namespace martgamelib
                 _text.FillColor = color;
             }
         }
-        [MonSerializer.MonInclude]
+        [MonSerializer.MonInclude, EditorVisible]
         internal Color color;
 
         public override void OnCreate()
@@ -244,6 +253,77 @@ namespace martgamelib
 
             RenderCamera.Render(_text);
 
+        }
+    }
+    public class TargetRenderer : RenderComponent
+    {
+        [MonSerializer.MonInclude, EditorVisible]
+        internal uint targetWidth, targetHeight;
+        [EditorHidden]
+        public uint TargetWidth
+        {
+            get
+            {
+                return targetWidth;
+            }
+            set
+            {
+                //only set if not yet constructed
+                if (!targetMade)
+                    targetWidth = value;
+            }
+        }
+        [EditorHidden]
+        public uint TargetHeight
+        {
+            get
+            {
+                return targetHeight;
+            }
+            set
+            {
+                //only set if not yet constructed
+                if (!targetMade)
+                    targetHeight = value;
+            }
+        }
+
+        internal bool targetMade = false;
+
+        [EditorHidden]
+        public RenderTexture Target => target;
+        private RenderTexture target;
+        private Sprite renderSprite;
+
+        public override void OnCreate()
+        {
+            base.OnCreate();
+            target = new RenderTexture(targetWidth, targetHeight);
+            renderSprite = new Sprite(target.Texture);
+            targetMade = true;
+        }
+
+        public override void Render()
+        {
+            base.Render();
+
+            target.Display();
+
+            //draw sprite
+            if (!CanRender()) return;
+
+            Vector relative = RenderCamera.GetRelativePosition(Parent);
+            if (!RenderCamera.IsVisible(relative)) return;
+
+            relative = RenderCamera.GetMappedPosition(relative);
+
+            renderSprite.Scale = martgame.ToSFMLVector(parent.Transform.Scale);
+            renderSprite.Position = martgame.ToSFMLVector(relative);
+            renderSprite.Rotation = (float)(parent.Transform.Rotation.Flip.Degrees + RenderCamera.Parent.Transform.Rotation.Degrees);
+
+            RenderCamera.Render(renderSprite);
+
+            target.Clear();
         }
     }
 }

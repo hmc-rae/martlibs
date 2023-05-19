@@ -14,16 +14,16 @@ namespace martgamelib
 {
     public class martgame
     {
-        public const string VERSION = "0.1.3";
-        internal static Vector2f ToSFMLVector(Vector vector)
+        public const string VERSION = "0.1.4";
+        public static Vector2f ToSFMLVector(Vector vector)
         {
             return new Vector2f((float)vector.X, (float)vector.Y);
         }
-        internal static Vector FromSFMLVector(Vector2u vector)
+        public static Vector FromSFMLVector(Vector2u vector)
         {
             return new Vector(vector.X, vector.Y);
         }
-        internal static Vector FromSFMLVector(Vector2f vector)
+        public static Vector FromSFMLVector(Vector2f vector)
         {
             return new Vector(vector.X, vector.Y);
         }
@@ -249,4 +249,14 @@ namespace martgamelib
             }
         }
     }
+    /// <summary>
+    /// Attach this to properties or fields to reveal them in a GUI editor. <br></br>
+    /// By default, all public fields are visible, and all others are hidden.
+    /// </summary>
+    public class EditorVisible : Attribute { }
+    /// <summary>
+    /// Attach this to properties or fields to hide them in a GUI editor. <br></br>
+    /// By default, all public fields are visible, and all others are hidden.
+    /// </summary>
+    public class EditorHidden : Attribute { }
 }
