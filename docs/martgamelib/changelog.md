@@ -33,3 +33,12 @@ By hmc-rae.
 		- `CameraComponent.GetRelativeMousePosition` now returns the mouse position adjusted purely to the camera.
 		- BehaviorComponent has a new method, `Destroy(BehaviorComponent)` and `Destroy(GameObject)`, which will flag a game object to be deleted at EoF.
 		- Prefabs can now be generated via `Prefab.GeneratePrefab(GameObject, string)`
+	- 0.1.4
+		- New function - `EnqueueFunction(Func<GameObject, int>)` added to behavior components. Any source can add a function to the component's local queue to be executed once
+			the component next sees fit.
+			By default, this will at least call once it's begun completion - good way to get a callback from a freshly made prefab, for example.
+		- Reworked how Cameras work with other things. Cameras now have a `PixelsPerUnit` property, which automatically is applied to simple renders like BoxRenderers. 
+		- `CameraComponent.GetMappedPosition(Vector)` will no longer return (NaN, NaN) if trying to map to something that's at the same position as the camera in question. 
+		- TextRenderers can consult Cameras to figure out their (vertical) render size in pixels, roughly, with `TextRenderer.UnitSize`.
+		- GUIEditor has begun development. Expect radical changes.
+		- New attributes, `EditorVisible` and `EditorHidden`. Attach these to a field OR property to make them visible / hidden in the GUI game scene editor.

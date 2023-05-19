@@ -39,6 +39,11 @@ namespace martgamelib
 
         public bool CanRender()
         {
+            if (camEntry == null)
+            {
+                camEntry = parent.Scene.getCamera(CameraID);
+            }
+
             if (camEntry.camera != null)
             {
                 RenderCamera = camEntry.camera;
@@ -124,7 +129,7 @@ namespace martgamelib
 
             relative = RenderCamera.GetMappedPosition(relative);
 
-            _shape.Scale = martgame.ToSFMLVector(parent.Transform.Scale);
+            _shape.Scale = martgame.ToSFMLVector(parent.Transform.Scale * RenderCamera.PixelsPerUnit);
             _shape.Position = martgame.ToSFMLVector(relative);
             _shape.Rotation = (float)(parent.Transform.Rotation.Flip.Degrees + RenderCamera.Parent.Transform.Rotation.Degrees);
             _shape.FillColor = color;
@@ -139,6 +144,22 @@ namespace martgamelib
         internal Font font;
 
         [EditorHidden]
+        public double UnitSize
+        {
+            get
+            {
+                return CharacterSize / RenderCamera.pixelsPerUnit.X;
+            }
+            set
+            {
+                if (CanRender())
+                    CharacterSize = (uint)(value * RenderCamera.PixelsPerUnit.X);
+                else
+                    CharacterSize = 30;
+            }
+        }
+
+        [EditorHidden]
         public string FontPath
         {
             get
@@ -148,7 +169,9 @@ namespace martgamelib
             set
             {
                 fontPath = value;
-                font = new Font(value);
+                font = new Font(fontPath);
+                if (text != null)
+                    _text.Font = font;
             }
         }
         [MonSerializer.MonInclude, EditorVisible]
@@ -221,12 +244,26 @@ namespace martgamelib
         [MonSerializer.MonInclude, EditorVisible]
         internal Color color;
 
+        public TextRenderer() { }
+        public TextRenderer(string path, string text)
+        {
+            fontPath = path;
+            this.text = text;
+        }
+
         public override void OnCreate()
         {
             base.OnCreate();
 
-            font = new Font(fontPath);
-            _text = new Text("", font);
+            if (File.Exists(fontPath))
+            {
+                font = new Font(fontPath);
+                _text = new Text("", font);
+            }
+            else
+            {
+                _text = new Text();
+            }
 
             _text.FillColor = color;
 
@@ -252,7 +289,6 @@ namespace martgamelib
             _text.FillColor = color;
 
             RenderCamera.Render(_text);
-
         }
     }
     public class TargetRenderer : RenderComponent

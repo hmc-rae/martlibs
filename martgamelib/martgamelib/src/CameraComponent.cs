@@ -14,8 +14,68 @@ namespace martgamelib
         /// The regions of detection - everything within the DetectRegion is located, and mapped to the MapRegion. <br></br>
         /// Usually the DetectRegion should encapsulate a wider range than the MapRegion.
         /// </summary>
-        public Vector DetectRegion, MapRegion;
+        [EditorHidden]
+        public Vector DetectRegion
+        {
+            get
+            {
+                return detectRegion;
+            }
+            set
+            {
+                detectRegion = value;
+            }
+        }
+        /// <summary>
+        /// The regions of detection - everything within the DetectRegion is located, and mapped to the MapRegion. <br></br>
+        /// Usually the DetectRegion should encapsulate a wider range than the MapRegion. <br></br>
+        /// Changing this will automatically update the PixelsPerUnit value.
+        /// </summary>
+        [EditorHidden]
+        public Vector MapRegion
+        {
+            get
+            {
+                return mapRegion;
+            }
+            set
+            {
+                mapRegion = value;
+
+                if (!CanRender) return;
+
+                Vector screenSize = target.PixelSize;
+                pixelsPerUnit = screenSize / mapRegion;
+            }
+        }
+        [EditorVisible, MonSerializer.MonInclude]
+        internal Vector detectRegion, mapRegion;
+
+        /// <summary>
+        /// The number of pixels that will exist in a single unit - (1, 1).
+        /// </summary>
+        public Vector PixelsPerUnit
+        {
+            get
+            {
+                return pixelsPerUnit;
+            }
+            set
+            {
+                pixelsPerUnit = value;
+                if (!CanRender) return;
+
+                Vector screenSize = target.PixelSize;
+                mapRegion = screenSize / pixelsPerUnit;
+                detectRegion = mapRegion + (Vector.XY * 2);
+            }
+        }
+        [EditorVisible, MonSerializer.MonInclude]
+        internal Vector pixelsPerUnit = new Vector(32, 32);
+
+        [EditorHidden]
         public int CameraID => camID;
+        [EditorHidden]
         public int LayerID
         {
             get
@@ -26,22 +86,32 @@ namespace martgamelib
             {
                 layID = value;
                 target = parent.scene.GetRenderLayer(layID);
+
+                if (!CanRender) return;
+
+                MapRegion = mapRegion;
             }
         }
 
-        [MonSerializer.MonInclude]
+        [MonSerializer.MonInclude, EditorVisible]
         internal int camID;
-        [MonSerializer.MonInclude]
+        [MonSerializer.MonInclude, EditorVisible]
         internal int layID;
 
         public CameraComponent()
         {
-
+            pixelsPerUnit = new Vector(32, 32);
+            mapRegion = new Vector(10, 10);
+            detectRegion = new Vector(12, 12);
         }
         public CameraComponent(int CameraID, int LayerID)
         {
             this.layID = LayerID;
             this.camID = CameraID;
+
+            pixelsPerUnit = new Vector(32, 32);
+            mapRegion = new Vector(8, 8);
+            detectRegion = new Vector(12, 12);
         }
 
         internal RenderLayer? target; 
@@ -93,34 +163,6 @@ namespace martgamelib
             pos = pos.Flip;
             pos += target.PixelRadius;
             return pos;
-        }
-        /// <summary>
-        /// Sets the MapRegion of this camera to the number of 'units' that exist on the target this camera holds.
-        /// <br></br>
-        /// Sets the DetectRegion to MapRegion + DetectDelta
-        /// </summary>
-        /// <param name="UPP"></param>
-        /// <param name="DetectDelta"></param>
-        public void SetPixelsPerUnit(Vector PPU, Vector DetectDelta)
-        {
-            if (!CanRender) return;
-            Vector screenSize = target.PixelSize;
-
-            MapRegion = screenSize / PPU;
-            DetectRegion = MapRegion + DetectDelta;
-        }
-
-        /// <summary>
-        /// Gets the number of pixels that exist in a single unit
-        /// </summary>
-        /// <returns></returns>
-        public Vector GetPixelsPerUnit()
-        {
-            if (!CanRender) return Vector.XY;
-
-            Vector screenSize = target.PixelSize;
-
-            return screenSize / MapRegion;
         }
         /// <summary>
         /// Maps a MousePosition vector (ideally provided by the InputManager - a vector representing some real point on the screen) to an abstract position relative to this camera, based on what the camera can see.

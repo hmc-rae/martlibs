@@ -209,17 +209,25 @@ namespace martgamelib
         }
 
         /// <summary>
-        /// Enqueues a piece of code to be run when the object next 
+        /// Enqueues a function to be called at the components' leisure.
         /// </summary>
         /// <param name="function"></param>
-        public void EnqueueFunction(Func<GameObject, int> function)
+        /// <returns></returns>
+        public bool EnqueueFunction(Func<BehaviorComponent, int> function)
         {
-
+            if (funcPool.OccupiedSize >= funcPool.MaxSize)
+                return false;
+            funcPool.Add(function);
+            return true;
         }
         internal void ProcessFunctions()
         {
-            for (int i = 0; i < )
+            for (int i = 0; i < funcPool.OccupiedSize; i++)
+            {
+                funcPool.Get(i).Invoke(this);
+            }
+            funcPool.Flush();
         }
-        internal Pool<Func<GameObject, int>> funcPool = new Pool<Func<GameObject, int>>(32); 
+        internal Pool<Func<BehaviorComponent, int>> funcPool = new Pool<Func<BehaviorComponent, int>>(32); 
     }
 }

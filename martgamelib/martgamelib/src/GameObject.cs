@@ -238,6 +238,7 @@ namespace martgamelib
             {
                 components[i].registerComponent();
                 components[i].OnCreate();
+                components[i].ProcessFunctions();
             }
             freshMade = false;
             Alive = true;
